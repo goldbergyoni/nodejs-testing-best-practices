@@ -1,8 +1,7 @@
 module.exports = {
   verbose: false,
   testMatch: [
-    '**/test/**/*test*.js',
-    '**/*test*.js',
+    '**/*test*.ts',
     '!**/mocha/**',
     '!**/playground/**',
     '!**/*test-helper*',
@@ -18,6 +17,9 @@ module.exports = {
   globalSetup: './example-application/test/global-setup.js',
   globalTeardown: './example-application/test/global-teardown.js',
   notifyMode: 'change',
+  transform: {
+    '^.+\\.ts$': 'ts-jest',
+  },
   watchPlugins: [
     'jest-watch-typeahead/filename',
     'jest-watch-typeahead/testname',

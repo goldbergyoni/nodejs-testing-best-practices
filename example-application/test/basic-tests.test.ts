@@ -1,51 +1,34 @@
-const axios = require('axios');
-const sinon = require('sinon');
-const nock = require('nock');
-const { initializeWebServer, stopWebServer } = require('../entry-points/api');
-const OrderRepository = require('../data-access/order-repository');
-
-// Configuring file-level HTTP client with base URL will allow
-// all the tests to approach with a shortened syntax
-let axiosAPIClient;
+import nock from 'nock';
+import sinon from 'sinon';
+import OrderRepository from '../data-access/order-repository';
+import {
+  cleanBeforeEach,
+  getHTTPClienForArrange,
+  getHTTPClient,
+  setupTestFile,
+  tearDownTestFile,
+} from './test-file-setup';
 
 beforeAll(async () => {
   // ️️️✅ Best Practice: Place the backend under test within the same process
-  const apiConnection = await initializeWebServer();
-  const axiosConfig = {
-    baseURL: `http://127.0.0.1:${apiConnection.port}`,
-    validateStatus: () => true, //Don't throw HTTP exceptions. Delegate to the tests to decide which error is acceptable
-  };
-  axiosAPIClient = axios.create(axiosConfig);
-
-  // ️️️✅ Best Practice: Ensure that this component is isolated by preventing unknown calls
-  const hostname = '127.0.0.1';
-  nock.disableNetConnect();
-  nock.enableNetConnect(hostname);
-
-  // Some http clients swallow the "no match" error, so throw here for easy debugging
-  nock.emitter.on('no match', (req) => {
-    if (req.hostname !== hostname) {
-      throw new Error(`Nock no match for: ${req.hostname}`)
-    }
-  })
+  await setupTestFile({
+    startAPI: true,
+    disableNetConnect: true,
+    includeTokenInHttpClient: true,
+  });
 });
 
 beforeEach(() => {
+  cleanBeforeEach();
   nock('http://localhost/user/').get(`/1`).reply(200, {
     id: 1,
     name: 'John',
   });
 });
 
-afterEach(() => {
-  nock.cleanAll();
-  sinon.restore();
-});
-
 afterAll(async () => {
   // ️️️✅ Best Practice: Clean-up resources after each run
-  await stopWebServer();
-  nock.enableNetConnect();
+  tearDownTestFile();
 });
 
 // ️️️✅ Best Practice: Structure tests
@@ -60,12 +43,12 @@ describe('/api', () => {
       };
       const {
         data: { id: addedOrderId },
-      } = await axiosAPIClient.post(`/order`, orderToAdd);
+      } = await getHTTPClienForArrange().post(`/order`, orderToAdd);
 
       //Act
       // ️️️✅ Best Practice: Use generic and reputable HTTP client like Axios or Fetch. Avoid libraries that are coupled to
       // the web framework or include custom assertion syntax (e.g. Supertest)
-      const getResponse = await axiosAPIClient.get(`/order/${addedOrderId}`);
+      const getResponse = await getHTTPClient().get(`/order/${addedOrderId}`);
 
       //Assert
       expect(getResponse).toMatchObject({
@@ -83,7 +66,7 @@ describe('/api', () => {
       const nonExistingOrderId = -1;
 
       //Act
-      const getResponse = await axiosAPIClient.get(
+      const getResponse = await getHTTPClient().get(
         `/order/${nonExistingOrderId}`
       );
 
@@ -103,7 +86,7 @@ describe('/api', () => {
       };
 
       //Act
-      const receivedAPIResponse = await axiosAPIClient.post(
+      const receivedAPIResponse = await getHTTPClient().post(
         '/order',
         orderToAdd
       );
@@ -131,10 +114,10 @@ describe('/api', () => {
       //Act
       const {
         data: { id: addedOrderId },
-      } = await axiosAPIClient.post('/order', orderToAdd);
+      } = await getHTTPClient().post('/order', orderToAdd);
 
       //Assert
-      const { data, status } = await axiosAPIClient.get(
+      const { data, status } = await getHTTPClient().get(
         `/order/${addedOrderId}`
       );
 
@@ -170,7 +153,7 @@ describe('/api', () => {
       };
 
       //Act
-      await axiosAPIClient.post('/order', orderToAdd);
+      await getHTTPClient().post('/order', orderToAdd);
 
       //Assert
       // ️️️✅ Best Practice: Assert that the app called the mailer service appropriately
@@ -192,7 +175,7 @@ describe('/api', () => {
       };
 
       //Act
-      const orderAddResult = await axiosAPIClient.post('/order', orderToAdd);
+      const orderAddResult = await getHTTPClient().post('/order', orderToAdd);
 
       //Assert
       expect(orderAddResult.status).toBe(400);
@@ -213,7 +196,7 @@ describe('/api', () => {
 
     test('When the user does not exist, return 404 response', async () => {
       //Arrange
-      nock('http://localhost/user/').get(`/7`).reply(404, null);
+      nock('http://localhost/user/').get(`/7`).reply(404, {});
       const orderToAdd = {
         userId: 7,
         productId: 2,
@@ -221,7 +204,7 @@ describe('/api', () => {
       };
 
       //Act
-      const orderAddResult = await axiosAPIClient.post('/order', orderToAdd);
+      const orderAddResult = await getHTTPClient().post('/order', orderToAdd);
 
       //Assert
       expect(orderAddResult.status).toBe(404);
@@ -247,7 +230,7 @@ describe('/api', () => {
       };
 
       //Act
-      await axiosAPIClient.post('/order', orderToAdd);
+      await getHTTPClient().post('/order', orderToAdd);
 
       //Assert
       // ️️️✅ Best Practice: Assert that the app called the mailer service appropriately

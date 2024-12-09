@@ -1,44 +1,44 @@
-const express = require('express');
-const util = require('util');
-const bodyParser = require('body-parser');
-const OrderRepository = require('../data-access/order-repository');
-const errorHandler = require('../error-handling').errorHandler;
-const orderService = require('../business-logic/order-service');
+import bodyParser from 'body-parser';
+import express from 'express';
+import { Server } from 'http';
+import { AddressInfo } from 'net';
+import util from 'util';
+import orderService from '../business-logic/order-service';
+import { errorHandler } from '../error-handling';
 
-let connection;
+let connection: Server | null = null;
 
-const initializeWebServer = (customMiddleware) => {
-  return new Promise((resolve, reject) => {
-    // A typical Express setup
-    expressApp = express();
+export const startWebServer = (): Promise<AddressInfo> => {
+  return new Promise<AddressInfo>((resolve, reject) => {
+    const expressApp = express();
     expressApp.use(
       bodyParser.urlencoded({
         extended: true,
       })
     );
     expressApp.use(bodyParser.json());
-    if (customMiddleware) {
-      expressApp.use(customMiddleware);
-    }
     defineRoutes(expressApp);
     // ️️️✅ Best Practice 8.13: Specify no port for testing, only in production
     // 📖 Read more at: bestpracticesnodejs.com/bp/8.13
     const webServerPort = process.env.PORT ? process.env.PORT : null;
     connection = expressApp.listen(webServerPort, () => {
-      resolve(connection.address());
+      resolve(connection!.address() as AddressInfo);
     });
   });
 };
 
-const stopWebServer = () => {
-  return new Promise((resolve, reject) => {
-    connection.close(() => {
-      resolve();
-    });
+export const stopWebServer = async () => {
+  return new Promise<void>((resolve, reject) => {
+    if (connection) {
+      connection.close(() => {
+        return resolve();
+      });
+    }
+    return resolve();
   });
 };
 
-const defineRoutes = (expressApp) => {
+const defineRoutes = (expressApp: express.Application) => {
   const router = express.Router();
 
   // add new order
@@ -76,16 +76,23 @@ const defineRoutes = (expressApp) => {
 
   expressApp.use('/order', router);
 
-  expressApp.use(async (error, req, res, next) => {
-    if (typeof error === 'object') {
-      if (error.isTrusted === undefined || error.isTrusted === null) {
-        error.isTrusted = true; //Error during a specific request is usually not catastrophic and should not lead to process exit
+  expressApp.use(
+    async (
+      error: unknown,
+      req: express.Request,
+      res: express.Response,
+      next: express.NextFunction
+    ) => {
+      if (error && typeof error === 'object' && 'isTrusted' in error) {
+        if (error.isTrusted === undefined || error.isTrusted === null) {
+          error.isTrusted = true; //Error during a specific request is usually not catastrophic and should not lead to process exit
+        }
       }
-    }
-    await errorHandler.handleError(error);
+      await errorHandler.handleError(error);
 
-    res.status(error?.status || 500).end();
-  });
+      res.status(error?.status || 500).end();
+    }
+  );
 };
 
 process.on('uncaughtException', (error) => {
@@ -95,8 +102,3 @@ process.on('uncaughtException', (error) => {
 process.on('unhandledRejection', (reason) => {
   errorHandler.handleError(reason);
 });
-
-module.exports = {
-  initializeWebServer,
-  stopWebServer,
-};
