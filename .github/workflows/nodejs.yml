@@ -47,7 +47,7 @@ jobs:
     strategy:
       matrix:
         test-type: ['test', 'test:nestjs', 'test:mocha']
-    if: contains(github.event.pull_request.changed_files, 'example-application/*') || contains(github.event.pull_request.changed_files, 'graphics/*') || contains(github.event.pull_request.changed_files, 'recipes/*')
+    if: contains(github.event.head_commit.modified, 'example-application/') || contains(github.event.head_commit.modified, 'graphics/') || contains(github.event.head_commit.modified, 'recipes/')
     
     steps:
     - uses: actions/checkout@v2
