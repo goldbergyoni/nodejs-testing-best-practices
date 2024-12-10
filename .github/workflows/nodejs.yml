@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        test-type: [test, test:nestjs, test:mocha]
+        test-type: ['test', 'test:nestjs', 'test:mocha']
     
     steps:
     - uses: actions/checkout@v2
