@@ -41,8 +41,13 @@ jobs:
         restore-keys: build-node_modules-
 
     - run: npm i
-      # if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
-          
-    - run: npm test
-    - run: npm run test:nestjs
-    - run: npm run test:mocha
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-type: [test, test:nestjs, test:mocha]
+    
+    steps:
+    - run: npm run ${{ matrix.test-type }}
