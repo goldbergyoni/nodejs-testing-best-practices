@@ -40,8 +40,8 @@ jobs:
         key: build-node_modules-${{ hashFiles('**/package-lock.json') }}
         restore-keys: build-node_modules-
 
-    - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
-      run: npm ci
+    - run: npm i
+      # if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
 
     - run: npm test
     - run: npm run test:nestjs
