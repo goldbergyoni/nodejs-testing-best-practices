@@ -76,6 +76,6 @@ jobs:
 
     - run: npm i
 
-    - run: echo "${{ github.event.pull_request.changed_files }}"
+    - run: echo "${{ github.event.compare }}"
 
     - run: npm run ${{ matrix.test-type }}
