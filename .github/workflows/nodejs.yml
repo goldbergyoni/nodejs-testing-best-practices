@@ -76,6 +76,6 @@ jobs:
 
     - run: npm i
 
-    - run: echo "${{ github.event.compare }}"
+    - run: echo "${{ toJson(github.event.head_commit.modified) }}"
 
     - run: npm run ${{ matrix.test-type }}
