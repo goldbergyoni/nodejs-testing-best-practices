@@ -76,6 +76,6 @@ jobs:
 
     - run: npm i
 
-    - run: echo "${{ github.event.head_commit.modified }}"
+    - run: echo "${{ github.event.pull_request.changed_files }}"
 
     - run: npm run ${{ matrix.test-type }}
