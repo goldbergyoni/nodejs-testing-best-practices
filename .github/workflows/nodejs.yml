@@ -47,7 +47,7 @@ jobs:
     strategy:
       matrix:
         test-type: ['test', 'test:nestjs', 'test:mocha']
-    if: contains(github.event.head_commit.modified, 'example-application/') || contains(github.event.head_commit.modified, 'graphics/') || contains(github.event.head_commit.modified, 'recipes/')
+    # if: contains(github.event.head_commit.modified, 'example-application/') || contains(github.event.head_commit.modified, 'graphics/') || contains(github.event.head_commit.modified, 'recipes/')
     
     steps:
     - uses: actions/checkout@v2
@@ -75,5 +75,7 @@ jobs:
         restore-keys: build-node_modules-
 
     - run: npm i
+
+    - run: echo "${{ github.event.head_commit.modified }}"
 
     - run: npm run ${{ matrix.test-type }}
