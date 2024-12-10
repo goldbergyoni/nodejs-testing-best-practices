@@ -25,6 +25,11 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: "${{ steps.nvm.outputs.NVMRC }}"
+    
+    - name: Install Docker Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y docker-compose
 
     - run: npm ci
     - run: npm test
