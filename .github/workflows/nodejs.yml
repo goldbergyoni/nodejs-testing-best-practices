@@ -7,8 +7,16 @@ on:
   push:
     branches:
       - '*'
+    paths:
+      - 'example-application/**'
+      - 'graphics/**'
+      - 'recipes/**'
   pull_request:
     branches: [ master ]
+    paths:
+      - 'example-application/**'
+      - 'graphics/**'
+      - 'recipes/**'
 
 jobs:
   build:
