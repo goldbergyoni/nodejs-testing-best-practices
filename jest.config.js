@@ -1,7 +1,7 @@
 module.exports = {
   verbose: false,
   testMatch: [
-    '**/*test*.ts',
+    '**/*test.{ts,js}',
     '!**/mocha/**',
     '!**/playground/**',
     '!**/*test-helper*',

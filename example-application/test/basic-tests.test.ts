@@ -1,17 +1,11 @@
 import nock from 'nock';
 import sinon from 'sinon';
 import OrderRepository from '../data-access/order-repository';
-import {
-  cleanBeforeEach,
-  getHTTPClienForArrange,
-  getHTTPClient,
-  setupTestFile,
-  tearDownTestFile,
-} from './test-file-setup';
+import { testSetup } from './test-file-setup';
 
 beforeAll(async () => {
   // ️️️✅ Best Practice: Place the backend under test within the same process
-  await setupTestFile({
+  await testSetup.start({
     startAPI: true,
     disableNetConnect: true,
     includeTokenInHttpClient: true,
@@ -19,7 +13,7 @@ beforeAll(async () => {
 });
 
 beforeEach(() => {
-  cleanBeforeEach();
+  testSetup.cleanBeforeEach();
   nock('http://localhost/user/').get(`/1`).reply(200, {
     id: 1,
     name: 'John',
@@ -28,7 +22,7 @@ beforeEach(() => {
 
 afterAll(async () => {
   // ️️️✅ Best Practice: Clean-up resources after each run
-  tearDownTestFile();
+  testSetup.tearDownTestFile();
 });
 
 // ️️️✅ Best Practice: Structure tests
@@ -43,12 +37,14 @@ describe('/api', () => {
       };
       const {
         data: { id: addedOrderId },
-      } = await getHTTPClienForArrange().post(`/order`, orderToAdd);
+      } = await testSetup.getHTTPClienForArrange().post(`/order`, orderToAdd);
 
       //Act
       // ️️️✅ Best Practice: Use generic and reputable HTTP client like Axios or Fetch. Avoid libraries that are coupled to
       // the web framework or include custom assertion syntax (e.g. Supertest)
-      const getResponse = await getHTTPClient().get(`/order/${addedOrderId}`);
+      const getResponse = await testSetup
+        .getHTTPClient()
+        .get(`/order/${addedOrderId}`);
 
       //Assert
       expect(getResponse).toMatchObject({
@@ -66,9 +62,9 @@ describe('/api', () => {
       const nonExistingOrderId = -1;
 
       //Act
-      const getResponse = await getHTTPClient().get(
-        `/order/${nonExistingOrderId}`
-      );
+      const getResponse = await testSetup
+        .getHTTPClient()
+        .get(`/order/${nonExistingOrderId}`);
 
       //Assert
       expect(getResponse.status).toBe(404);
@@ -86,10 +82,9 @@ describe('/api', () => {
       };
 
       //Act
-      const receivedAPIResponse = await getHTTPClient().post(
-        '/order',
-        orderToAdd
-      );
+      const receivedAPIResponse = await testSetup
+        .getHTTPClient()
+        .post('/order', orderToAdd);
 
       //Assert
       expect(receivedAPIResponse).toMatchObject({
@@ -114,12 +109,12 @@ describe('/api', () => {
       //Act
       const {
         data: { id: addedOrderId },
-      } = await getHTTPClient().post('/order', orderToAdd);
+      } = await testSetup.getHTTPClient().post('/order', orderToAdd);
 
       //Assert
-      const { data, status } = await getHTTPClient().get(
-        `/order/${addedOrderId}`
-      );
+      const { data, status } = await testSetup
+        .getHTTPClient()
+        .get(`/order/${addedOrderId}`);
 
       expect({
         data,
@@ -153,7 +148,7 @@ describe('/api', () => {
       };
 
       //Act
-      await getHTTPClient().post('/order', orderToAdd);
+      await testSetup.getHTTPClient().post('/order', orderToAdd);
 
       //Assert
       // ️️️✅ Best Practice: Assert that the app called the mailer service appropriately
@@ -175,7 +170,9 @@ describe('/api', () => {
       };
 
       //Act
-      const orderAddResult = await getHTTPClient().post('/order', orderToAdd);
+      const orderAddResult = await testSetup
+        .getHTTPClient()
+        .post('/order', orderToAdd);
 
       //Assert
       expect(orderAddResult.status).toBe(400);
@@ -196,7 +193,7 @@ describe('/api', () => {
 
     test('When the user does not exist, return 404 response', async () => {
       //Arrange
-      nock('http://localhost/user/').get(`/7`).reply(404, {});
+      nock('http://localhost/user/').get(`/7`).reply(404, undefined);
       const orderToAdd = {
         userId: 7,
         productId: 2,
@@ -204,7 +201,10 @@ describe('/api', () => {
       };
 
       //Act
-      const orderAddResult = await getHTTPClient().post('/order', orderToAdd);
+      console.log('t1');
+      const orderAddResult = await testSetup
+        .getHTTPClient()
+        .post('/order', orderToAdd);
 
       //Assert
       expect(orderAddResult.status).toBe(404);
@@ -230,7 +230,7 @@ describe('/api', () => {
       };
 
       //Act
-      await getHTTPClient().post('/order', orderToAdd);
+      await testSetup.getHTTPClient().post('/order', orderToAdd);
 
       //Assert
       // ️️️✅ Best Practice: Assert that the app called the mailer service appropriately

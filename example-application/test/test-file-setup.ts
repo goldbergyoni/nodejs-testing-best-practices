@@ -1,9 +1,13 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import * as colors from 'colors/safe';
+import dateFns from 'date-fns';
 import { AddressInfo } from 'net';
 import nock from 'nock';
 import * as sinon from 'sinon';
+
 import { startWebServer, stopWebServer } from '../entry-points/api';
+import { Roles, User } from '../libraries/types';
+const jwt = require('jsonwebtoken');
 
 export type TestStartOptions = {
   startAPI: boolean;
@@ -16,46 +20,47 @@ let httpClientForArrange: AxiosInstance | undefined; // This is used for making 
 let httpClient: AxiosInstance | undefined; // Http client for the Act phase, won't throw errors but rather return statuses
 let chosenOptions: TestStartOptions | undefined;
 
-export async function setupTestFile(options: TestStartOptions) {
-  chosenOptions = options;
-  if (options.startAPI === true) {
-    apiAddress = await startWebServer();
-  }
-  if (options.disableNetConnect === true) {
-    disableNetworkConnect();
-  }
-}
+export const testSetup = {
+  start: async function (options: TestStartOptions) {
+    chosenOptions = options;
+    if (options.startAPI === true) {
+      apiAddress = await startWebServer();
+    }
+    if (options.disableNetConnect === true) {
+      disableNetworkConnect();
+    }
+  },
 
-export async function tearDownTestFile() {
-  if (apiAddress) {
-    await stopWebServer();
-  }
-  apiAddress = null;
-  nock.cleanAll();
-  nock.enableNetConnect();
-  sinon.restore();
-}
+  tearDownTestFile: async function () {
+    if (apiAddress) {
+      await stopWebServer();
+    }
+    apiAddress = null;
+    nock.cleanAll();
+    nock.enableNetConnect();
+    sinon.restore();
+  },
 
-export async function cleanBeforeEach() {
-  nock.cleanAll();
-  sinon.restore();
-}
+  cleanBeforeEach: async function () {
+    nock.cleanAll();
+    sinon.restore();
+  },
 
-export function getHTTPClienForArrange(): AxiosInstance {
-  if (!httpClientForArrange) {
-    httpClientForArrange = buildHttpClient(true);
-  }
+  getHTTPClienForArrange: function (): AxiosInstance {
+    if (!httpClientForArrange) {
+      httpClientForArrange = buildHttpClient(true);
+    }
 
-  return httpClientForArrange!;
-}
+    return httpClientForArrange!;
+  },
 
-export function getHTTPClient(): AxiosInstance {
-  if (!httpClient) {
-    httpClient = buildHttpClient(false);
-  }
-
-  return httpClient!;
-}
+  getHTTPClient: function (): AxiosInstance {
+    if (!httpClient) {
+      httpClient = buildHttpClient(false);
+    }
+    return httpClient!;
+  },
+};
 
 function buildHttpClient(throwsIfErrorStatus: boolean = false) {
   if (!apiAddress) {
@@ -69,14 +74,25 @@ function buildHttpClient(throwsIfErrorStatus: boolean = false) {
   }
 
   const axiosConfig: AxiosRequestConfig = {
-    headers: { 'Content-Type': 'application/json' },
     maxRedirects: 0,
   };
+  axiosConfig.headers = new axios.AxiosHeaders();
+  axiosConfig.headers.set('Content-Type', 'application/json');
   if (apiAddress) {
     axiosConfig.baseURL = `http://127.0.0.1:${apiAddress.port}`;
   }
   if (!throwsIfErrorStatus) {
     axiosConfig.validateStatus = () => true;
+  }
+  if (chosenOptions?.includeTokenInHttpClient) {
+    axiosConfig.headers.set(
+      'Authorization',
+      `${signToken(
+        { id: '1', name: 'John' },
+        Roles.user,
+        dateFns.addDays(new Date(), 1).getTime()
+      )}`
+    );
   }
 
   const axiosInstance = axios.create(axiosConfig);
@@ -96,4 +112,19 @@ function disableNetworkConnect() {
   nock.enableNetConnect(
     (host) => host.includes('127.0.0.1') || host.includes('localhost')
   );
+}
+
+function signToken(user: User, role: Roles, expirationInUnixTime: number) {
+  const token = jwt.sign(
+    {
+      exp: expirationInUnixTime,
+      data: {
+        user,
+        role,
+      },
+    },
+    'some secret' // In production system obviously read this from config...
+  );
+
+  return token;
 }

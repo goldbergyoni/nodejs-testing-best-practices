@@ -1,12 +1,12 @@
 const util = require('util');
-const axios = require('axios');
+const axios = require('axios').default;
 const mailer = require('../libraries/mailer');
-const axiosRetry = require('axios-retry');
+const axiosRetry = require('axios-retry').default;
 const OrderRepository = require('../data-access/order-repository');
 const { AppError } = require('../error-handling');
 const MessageQueueClient = require('../libraries/message-queue-client');
 
-const axiosHTTPClient = axios.create();
+const axiosHTTPClient = axios.create({});
 axiosRetry(axiosHTTPClient, { retries: 3 });
 
 module.exports.addOrder = async function (newOrder) {
@@ -19,6 +19,7 @@ module.exports.addOrder = async function (newOrder) {
   const userWhoOrdered = await getUserFromUsersService(newOrder.userId);
 
   if (!userWhoOrdered) {
+    console.log('The user was not found');
     throw new AppError(
       'user-doesnt-exist',
       `The user ${newOrder.userId} doesnt exist`,

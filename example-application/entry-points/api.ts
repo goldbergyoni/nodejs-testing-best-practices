@@ -5,6 +5,7 @@ import { AddressInfo } from 'net';
 import util from 'util';
 import orderService from '../business-logic/order-service';
 import { errorHandler } from '../error-handling';
+import { authenticationMiddleware } from '../libraries/authentication-middleware';
 
 let connection: Server | null = null;
 
@@ -17,6 +18,7 @@ export const startWebServer = (): Promise<AddressInfo> => {
       })
     );
     expressApp.use(bodyParser.json());
+    expressApp.use(authenticationMiddleware);
     defineRoutes(expressApp);
     // ️️️✅ Best Practice 8.13: Specify no port for testing, only in production
     // 📖 Read more at: bestpracticesnodejs.com/bp/8.13
@@ -77,20 +79,26 @@ const defineRoutes = (expressApp: express.Application) => {
   expressApp.use('/order', router);
 
   expressApp.use(
+    //An error can be any unknown thing, this is why we're being careful here
     async (
       error: unknown,
-      req: express.Request,
+      _req: express.Request,
       res: express.Response,
-      next: express.NextFunction
+      _next: express.NextFunction
     ) => {
-      if (error && typeof error === 'object' && 'isTrusted' in error) {
-        if (error.isTrusted === undefined || error.isTrusted === null) {
-          error.isTrusted = true; //Error during a specific request is usually not catastrophic and should not lead to process exit
-        }
+      console.log('Express error handler is invoked with', error);
+      if (!error || typeof error !== 'object') {
+        await errorHandler.handleError(error);
+        return res.status(500).end();
       }
-      await errorHandler.handleError(error);
-
-      res.status(error?.status || 500).end();
+      const status = 'status' in error ? error.status : 500;
+      const richError = error as Record<string, unknown>;
+      if (!('isTrusted' in error)) {
+        //Error during a specific request is usually not catastrophic and should not lead to process exit
+        richError.isTrusted = true;
+      }
+      await errorHandler.handleError(richError);
+      res.status(status as number).end();
     }
   );
 };
