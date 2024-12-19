@@ -1,3 +1,4 @@
+//@ts-nocheck
 import bodyParser from 'body-parser';
 import express from 'express';
 import { Server } from 'http';
@@ -44,17 +45,24 @@ const defineRoutes = (expressApp: express.Application) => {
   const router = express.Router();
 
   // add new order
-  router.post('/', async (req, res, next) => {
-    try {
-      console.log(
-        `Order API was called to add new Order ${util.inspect(req.body)}`
-      );
-      const addOrderResponse = await orderService.addOrder(req.body);
-      return res.json(addOrderResponse);
-    } catch (error) {
-      next(error);
+  router.post(
+    '/',
+    async (
+      req: express.Request,
+      res: express.Response,
+      next: express.NextFunction
+    ) => {
+      try {
+        console.log(
+          `Order API was called to add new Order ${util.inspect(req.body)}`
+        );
+        const addOrderResponse = await orderService.addOrder(req.body);
+        return res.json(addOrderResponse);
+      } catch (error) {
+        next(error);
+      }
     }
-  });
+  );
 
   // get existing order by id
   router.get('/:id', async (req, res, next) => {
@@ -86,7 +94,6 @@ const defineRoutes = (expressApp: express.Application) => {
       res: express.Response,
       _next: express.NextFunction
     ) => {
-      console.log('Express error handler is invoked with', error);
       if (!error || typeof error !== 'object') {
         await errorHandler.handleError(error);
         return res.status(500).end();

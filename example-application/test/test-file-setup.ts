@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
-import * as colors from 'colors/safe';
+import colors from 'colors/safe';
 import dateFns from 'date-fns';
 import { AddressInfo } from 'net';
 import nock from 'nock';
@@ -13,6 +13,8 @@ export type TestStartOptions = {
   startAPI: boolean;
   disableNetConnect: boolean;
   includeTokenInHttpClient: boolean;
+  mockGetUserCalls: boolean;
+  mockMailerCalls: boolean;
 };
 
 let apiAddress: null | AddressInfo; // holds the address of the API server to bake into HTTP clients
@@ -29,6 +31,19 @@ export const testSetup = {
     if (options.disableNetConnect === true) {
       disableNetworkConnect();
     }
+    nock.emitter.on('no match', (request) => {
+      if (
+        request.host?.includes('localhost') ||
+        request.host?.includes('127.0.0.1')
+      ) {
+        return;
+      }
+      console.log(
+        colors.red(
+          `An unmocked HTTP call was found. This is not recommended as it hurts performance, stability and also might get blocked: ${request.method} ${request.protocol}://${request.host}${request.path}`,
+        ),
+      );
+    });
   },
 
   tearDownTestFile: async function () {
@@ -41,9 +56,18 @@ export const testSetup = {
     sinon.restore();
   },
 
-  cleanBeforeEach: async function () {
+  resetBeforeEach: async function () {
     nock.cleanAll();
     sinon.restore();
+    if (chosenOptions?.mockGetUserCalls === true) {
+      nock('http://localhost')
+        .get('/user/1')
+        .reply(200, { id: '1', name: 'John' })
+        .persist();
+    }
+    if (chosenOptions?.mockMailerCalls === true) {
+      nock('http://mailer.com').post('/send').reply(202);
+    }
   },
 
   getHTTPClienForArrange: function (): AxiosInstance {
@@ -60,6 +84,20 @@ export const testSetup = {
     }
     return httpClient!;
   },
+  removeUserNock: function () {
+    nock.removeInterceptor({
+      hostname: 'localhost',
+      method: 'GET',
+      path: '/user/1',
+    });
+  },
+  removeMailNock: function () {
+    nock.removeInterceptor({
+      hostname: 'mailer.com',
+      method: 'POST',
+      path: '/send',
+    });
+  },
 };
 
 function buildHttpClient(throwsIfErrorStatus: boolean = false) {
@@ -68,8 +106,8 @@ function buildHttpClient(throwsIfErrorStatus: boolean = false) {
     console.log(
       colors.red(
         `Test warning: The http client will be returned without a base address, is this what you meant?
-                  If you mean to test the API, ensure to pass {startAPI: true} to the setupTestFile function`
-      )
+                  If you mean to test the API, ensure to pass {startAPI: true} to the setupTestFile function`,
+      ),
     );
   }
 
@@ -90,8 +128,8 @@ function buildHttpClient(throwsIfErrorStatus: boolean = false) {
       `${signToken(
         { id: '1', name: 'John' },
         Roles.user,
-        dateFns.addDays(new Date(), 1).getTime()
-      )}`
+        dateFns.addDays(new Date(), 1).getTime(),
+      )}`,
     );
   }
 
@@ -110,7 +148,7 @@ function getWebServerAddress() {
 function disableNetworkConnect() {
   nock.disableNetConnect();
   nock.enableNetConnect(
-    (host) => host.includes('127.0.0.1') || host.includes('localhost')
+    (host) => host.includes('127.0.0.1') || host.includes('localhost'),
   );
 }
 
@@ -123,7 +161,7 @@ function signToken(user: User, role: Roles, expirationInUnixTime: number) {
         role,
       },
     },
-    'some secret' // In production system obviously read this from config...
+    'some secret', // In production system obviously read this from config...
   );
 
   return token;

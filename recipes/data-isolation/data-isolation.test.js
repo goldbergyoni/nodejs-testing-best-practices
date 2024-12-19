@@ -1,46 +1,27 @@
 const axios = require('axios').default;
 const sinon = require('sinon');
 const nock = require('nock');
-const {
-  startWebServer,
-  stopWebServer,
-} = require('../../example-application/entry-points/api');
+const { testSetup } = require('../../example-application/test/test-file-setup');
 const OrderRepository = require('../../example-application/data-access/order-repository');
 const { getShortUnique } = require('./test-helper');
 
-let axiosAPIClient;
-
 beforeAll(async () => {
-  // ️️️✅ Best Practice: Place the backend under test within the same process
-  const apiConnection = await startWebServer();
-  const axiosConfig = {
-    baseURL: `http://127.0.0.1:${apiConnection.port}`,
-    validateStatus: () => true, //Don't throw HTTP exceptions. Delegate to the tests to decide which error is acceptable
-  };
-  axiosAPIClient = axios.create(axiosConfig);
+  await testSetup.start({
+    startAPI: true,
+    disableNetConnect: true,
+    includeTokenInHttpClient: true,
+    mockGetUserCalls: true,
+    mockMailerCalls: true,
+  });
 });
 
 beforeEach(() => {
-  nock('http://localhost/user/')
-    .get(`/1`)
-    .reply(200, {
-      id: 1,
-      name: 'John',
-    })
-    .persist();
-});
-
-afterEach(() => {
-  nock.cleanAll();
-  sinon.restore();
+  testSetup.resetBeforeEach();
 });
 
 afterAll(async () => {
-  await stopWebServer();
-  nock.enableNetConnect();
-
-  // ️️️✅ Best Practice: Avoid cleaning-up the database after each test or afterAll
-  // This will interfere with other tests that run in different processes
+  // ️️️✅ Best Practice: Clean-up resources after each run
+  testSetup.tearDownTestFile();
 });
 
 describe('/api', () => {
@@ -57,10 +38,9 @@ describe('/api', () => {
       };
 
       //Act
-      const receivedAPIResponse = await axiosAPIClient.post(
-        '/order',
-        orderToAdd
-      );
+      const receivedAPIResponse = await testSetup
+        .getHTTPClient()
+        .post('/order', orderToAdd);
 
       //Assert
       expect(receivedAPIResponse.status).toBe(200);
@@ -76,10 +56,9 @@ describe('/api', () => {
       };
 
       //Act
-      const receivedAPIResponse = await axiosAPIClient.post(
-        '/order',
-        orderToAdd
-      );
+      const receivedAPIResponse = await testSetup
+        .getHTTPClient()
+        .post('/order', orderToAdd);
 
       //Assert
       expect(receivedAPIResponse.data.mode).toBe('approved');
@@ -93,12 +72,14 @@ describe('/api', () => {
         productId: 2,
         externalIdentifier: `id-${getShortUnique()}`, //unique value
       };
-      const existingOrder = await axiosAPIClient.post('/order', orderToAdd);
+      const existingOrder = await testSetup
+        .getHTTPClient()
+        .post('/order', orderToAdd);
 
       // Act
-      const receivedResponse = await axiosAPIClient.get(
-        `/order/${existingOrder.data.id}`
-      );
+      const receivedResponse = await testSetup
+        .getHTTPClient()
+        .get(`/order/${existingOrder.data.id}`);
 
       // Assert
       expect(receivedResponse.status).toBe(200);
@@ -109,40 +90,45 @@ describe('/api', () => {
     // ️️️✅ Best Practice: Acknowledge that other unknown records might exist, find your expectations within
     // the result
     test.todo(
-      'When adding 2 orders, then these orders exist in result when querying for all'
+      'When adding 2 orders, then these orders exist in result when querying for all',
     );
   });
   describe('DELETE /order', () => {
-    test('When deleting an existing order, Then it should NOT be retrievable', async () => {
+    test.only('When deleting an existing order, Then it should NOT be retrievable', async () => {
       // Arrange
       const orderToDelete = {
         userId: 1,
         productId: 2,
         externalIdentifier: `id-${getShortUnique()}`,
       };
-      const deletedOrder = (await axiosAPIClient.post('/order', orderToDelete))
-        .data.id;
+      const deletedOrder = (
+        await testSetup.getHTTPClient().post('/order', orderToDelete)
+      ).data.id;
+      console.log('deletedOrder', deletedOrder);
       const orderNotToBeDeleted = orderToDelete;
       orderNotToBeDeleted.externalIdentifier = `id-${getShortUnique()}`;
       const notDeletedOrder = (
-        await axiosAPIClient.post('/order', orderNotToBeDeleted)
+        await testSetup.getHTTPClient().post('/order', orderNotToBeDeleted)
       ).data.id;
+      console.log('not deleted', notDeletedOrder);
 
       // Act
-      const deleteRequestResponse = await axiosAPIClient.delete(
-        `/order/${deletedOrder}`
-      );
+      const deleteRequestResponse = await testSetup
+        .getHTTPClient()
+        .delete(`/order/${deletedOrder}`);
 
       // Assert
       const getDeletedOrderStatus = (
-        await axiosAPIClient.get(`/order/${deletedOrder}`)
+        await testSetup.getHTTPClient().get(`/order/${deletedOrder}`)
       ).status;
+      console.log('getDeletedOrderStatus', getDeletedOrderStatus);
       const getNotDeletedOrderStatus = (
-        await axiosAPIClient.get(`/order/${notDeletedOrder}`)
+        await testSetup.getHTTPClient().get(`/order/${notDeletedOrder}`)
       ).status;
       expect(getNotDeletedOrderStatus).toBe(200);
       expect(getDeletedOrderStatus).toBe(404);
       expect(deleteRequestResponse.status).toBe(204);
+      console.log('not deleted response', getNotDeletedOrderStatus);
     });
   });
 });

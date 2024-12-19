@@ -1,32 +1,28 @@
 const path = require('path');
-const axios = require('axios');
 const nock = require('nock');
 const jestOpenAPI = require('jest-openapi').default;
 const {
-  initializeWebServer,
-  stopWebServer,
-} = require('../../../example-application/entry-points/api');
+  testSetup,
+} = require('../../../example-application/test/test-file-setup');
 
 jestOpenAPI(path.join(__dirname, '../../../example-application/openapi.json'));
-
-let axiosAPIClient;
-
 beforeAll(async () => {
-  // ️️️✅ Best Practice: Place the backend under test within the same process
-  const apiConnection = await initializeWebServer();
-  const axiosConfig = {
-    baseURL: `http://127.0.0.1:${apiConnection.port}`,
-    validateStatus: () => true, //Don't throw HTTP exceptions. Delegate to the tests to decide which error is acceptable
-  };
-  axiosAPIClient = axios.create(axiosConfig);
+  await testSetup.start({
+    startAPI: true,
+    disableNetConnect: true,
+    includeTokenInHttpClient: true,
+    mockGetUserCalls: true,
+    mockMailerCalls: true,
+  });
 });
 
-afterEach(() => {
-  nock.cleanAll();
+beforeEach(() => {
+  testSetup.resetBeforeEach();
 });
 
 afterAll(async () => {
-  await stopWebServer();
+  // ️️️✅ Best Practice: Clean-up resources after each run
+  testSetup.tearDownTestFile();
 });
 
 describe('Verify openApi (Swagger) spec', () => {
@@ -43,10 +39,12 @@ describe('Verify openApi (Swagger) spec', () => {
         mode: 'approved',
       };
 
-      const res = await axiosAPIClient.post('/order', orderToAdd);
+      const receivedResponse = await testSetup
+        .getHTTPClient()
+        .post('/order', orderToAdd);
 
       // ️️️✅ Best Practice: When testing the API contract/doc
-      expect(res).toSatisfyApiSpec();
+      expect(receivedResponse).toSatisfyApiSpec();
     });
 
     test('When an invalid order was send, then error 400 is expected', async () => {
@@ -62,7 +60,9 @@ describe('Verify openApi (Swagger) spec', () => {
       };
 
       // Act
-      const receivedResponse = await axiosAPIClient.post('/order', orderToAdd);
+      const receivedResponse = await testSetup
+        .getHTTPClient()
+        .post('/order', orderToAdd);
 
       // Assert
       expect(receivedResponse).toSatisfyApiSpec();
@@ -77,7 +77,7 @@ describe('Verify openApi (Swagger) spec', () => {
         mode: 'approved',
       };
 
-      const res = await axiosAPIClient.post('/order', orderToAdd);
+      const res = await testSetup.getHTTPClient().post('/order', orderToAdd);
 
       expect(res).toSatisfyApiSpec();
     });

@@ -5,19 +5,18 @@ import { testSetup } from './test-file-setup';
 
 beforeAll(async () => {
   // ️️️✅ Best Practice: Place the backend under test within the same process
+  // ️️️✅ Best Practice: Make it clear what is happening before and during the tests
   await testSetup.start({
     startAPI: true,
     disableNetConnect: true,
     includeTokenInHttpClient: true,
+    mockGetUserCalls: true,
+    mockMailerCalls: true,
   });
 });
 
 beforeEach(() => {
-  testSetup.cleanBeforeEach();
-  nock('http://localhost/user/').get(`/1`).reply(200, {
-    id: 1,
-    name: 'John',
-  });
+  testSetup.resetBeforeEach();
 });
 
 afterAll(async () => {
@@ -137,6 +136,7 @@ describe('/api', () => {
       // ️️️✅ Best Practice: Intercept requests for 3rd party services to eliminate undesired side effects like emails or SMS
       // ️️️✅ Best Practice: Specify the body when you need to make sure you call the 3rd party service as expected
       let emailPayload;
+      testSetup.removeMailNock();
       nock('http://mailer.com')
         .post('/send', (payload) => ((emailPayload = payload), true))
         .reply(202);
@@ -193,15 +193,15 @@ describe('/api', () => {
 
     test('When the user does not exist, return 404 response', async () => {
       //Arrange
-      nock('http://localhost/user/').get(`/7`).reply(404, undefined);
+      testSetup.removeUserNock();
+      nock('http://localhost').get('/user/1').reply(404, undefined);
       const orderToAdd = {
-        userId: 7,
+        userId: 1,
         productId: 2,
         mode: 'draft',
       };
 
       //Act
-      console.log('t1');
       const orderAddResult = await testSetup
         .getHTTPClient()
         .post('/order', orderToAdd);
@@ -215,6 +215,7 @@ describe('/api', () => {
       process.env.SEND_MAILS = 'true';
       // ️️️✅ Best Practice: Intercept requests for 3rd party services to eliminate undesired side effects like emails or SMS
       // ️️️✅ Best Practice: Specify the body when you need to make sure you call the 3rd party service as expected
+      testSetup.removeMailNock();
       let emailPayload;
       nock('http://mailer.com')
         .post('/send', (payload) => ((emailPayload = payload), true))

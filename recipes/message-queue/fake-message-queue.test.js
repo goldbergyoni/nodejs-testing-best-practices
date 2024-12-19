@@ -3,10 +3,7 @@ const sinon = require('sinon');
 const nock = require('nock');
 const testHelpers = require('./test-helpers');
 
-const {
-  initializeWebServer,
-  stopWebServer,
-} = require('../../example-application/entry-points/api');
+const { testSetup } = require('../../example-application/test/test-file-setup');
 const MessageQueueClient = require('../../example-application/libraries/message-queue-client');
 const {
   FakeMessageQueueProvider,
@@ -15,43 +12,24 @@ const {
   QueueConsumer,
 } = require('../../example-application/entry-points/message-queue-consumer');
 
-let axiosAPIClient;
-
 beforeAll(async () => {
-  // ️️️✅ Best Practice: Place the backend under test within the same process
-  const apiConnection = await initializeWebServer();
-
-  // ️️️✅ Best Practice: Ensure that this component is isolated by preventing unknown calls
-  nock.disableNetConnect();
-  nock.enableNetConnect('127.0.0.1');
-  const axiosConfig = {
-    baseURL: `http://127.0.0.1:${apiConnection.port}`,
-    validateStatus: () => true, //Don't throw HTTP exceptions. Delegate to the tests to decide which error is acceptable
-  };
-  axiosAPIClient = axios.create(axiosConfig);
-
+  await testSetup.start({
+    startAPI: true,
+    disableNetConnect: true,
+    includeTokenInHttpClient: true,
+    mockGetUserCalls: true,
+    mockMailerCalls: true,
+  });
   process.env.USE_FAKE_MQ = 'true';
 });
 
 beforeEach(() => {
-  nock('http://localhost/user/').get(`/1`).reply(200, {
-    id: 1,
-    name: 'John',
-  });
-  nock('http://mail.com').post('/send').reply(202);
-});
-
-afterEach(() => {
-  nock.cleanAll();
-  sinon.restore();
+  testSetup.resetBeforeEach();
 });
 
 afterAll(async () => {
   // ️️️✅ Best Practice: Clean-up resources after each run
-  await stopWebServer();
-  //await messageQueueClient.close();
-  nock.enableNetConnect();
-  process.env.USE_FAKE_MQ = undefined;
+  testSetup.tearDownTestFile();
 });
 
 // ️️️✅ Best Practice: Test a flow that starts via a queue message and ends with removing/confirming the message
@@ -62,8 +40,9 @@ test('Whenever a user deletion message arrive, then his orders are deleted', asy
     productId: 2,
     mode: 'approved',
   };
-  const addedOrderId = (await axiosAPIClient.post('/order', orderToAdd)).data
-    .id;
+  const addedOrderId = (
+    await testSetup.getHTTPClient().post('/order', orderToAdd)
+  ).data.id;
   const messageQueueClient = await testHelpers.startMQConsumer('fake');
 
   // Act
@@ -73,9 +52,9 @@ test('Whenever a user deletion message arrive, then his orders are deleted', asy
 
   // Assert
   await messageQueueClient.waitFor('ack', 1);
-  const aQueryForDeletedOrder = await axiosAPIClient.get(
-    `/order/${addedOrderId}`
-  );
+  const aQueryForDeletedOrder = await testSetup
+    .getHTTPClient()
+    .get(`/order/${addedOrderId}`);
   expect(aQueryForDeletedOrder.status).toBe(404);
 });
 
@@ -88,7 +67,7 @@ test('When a poisoned message arrives, then it is being rejected back', async ()
   await messageQueueClient.publish(
     'user.events',
     'user.deleted',
-    messageWithInvalidSchema
+    messageWithInvalidSchema,
   );
 
   // Assert
@@ -98,10 +77,11 @@ test('When a poisoned message arrives, then it is being rejected back', async ()
 test('When user deleted message arrives, then all corresponding orders are deleted', async () => {
   // Arrange
   const orderToAdd = { userId: 1, productId: 2, status: 'approved' };
-  const addedOrderId = (await axiosAPIClient.post('/order', orderToAdd)).data
-    .id;
+  const addedOrderId = (
+    await testSetup.getHTTPClient().post('/order', orderToAdd)
+  ).data.id;
   const messageQueueClient = new MessageQueueClient(
-    new FakeMessageQueueProvider()
+    new FakeMessageQueueProvider(),
   );
   await new QueueConsumer(messageQueueClient, 'user.deleted').start();
 
@@ -112,9 +92,9 @@ test('When user deleted message arrives, then all corresponding orders are delet
 
   // Assert
   await messageQueueClient.waitFor('ack', 1);
-  const aQueryForDeletedOrder = await axiosAPIClient.get(
-    `/order/${addedOrderId}`
-  );
+  const aQueryForDeletedOrder = await testSetup
+    .getHTTPClient()
+    .get(`/order/${addedOrderId}`);
   expect(aQueryForDeletedOrder.status).toBe(404);
 });
 
@@ -129,7 +109,7 @@ test('When a valid order is added, then a message is emitted to the new-order qu
   const spyOnSendMessage = sinon.spy(MessageQueueClient.prototype, 'publish');
 
   //Act
-  await axiosAPIClient.post('/order', orderToAdd);
+  await testSetup.getHTTPClient().post('/order', orderToAdd);
 
   // Assert
   expect(spyOnSendMessage.lastCall.args[0]).toBe('order.events');
@@ -138,17 +118,17 @@ test('When a valid order is added, then a message is emitted to the new-order qu
 
 test.todo('When an error occurs, then the message is not acknowledged');
 test.todo(
-  'When a new valid user-deletion message is processes, then the message is acknowledged'
+  'When a new valid user-deletion message is processes, then the message is acknowledged',
 );
 test.todo(
-  'When two identical create-order messages arrives, then the app is idempotent and only one is created'
+  'When two identical create-order messages arrives, then the app is idempotent and only one is created',
 );
 test.todo(
-  'When occasional failure occur during message processing , then the error is handled appropriately'
+  'When occasional failure occur during message processing , then the error is handled appropriately',
 );
 test.todo(
-  'When multiple user deletion message arrives, then all the user orders are deleted'
+  'When multiple user deletion message arrives, then all the user orders are deleted',
 );
 test.todo(
-  'When multiple user deletion message arrives and one fails, then only the failed message is not acknowledged'
+  'When multiple user deletion message arrives and one fails, then only the failed message is not acknowledged',
 );
