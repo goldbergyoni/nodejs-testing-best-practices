@@ -5,8 +5,8 @@ import { AddressInfo } from 'net';
 import nock from 'nock';
 import * as sinon from 'sinon';
 
-import { startWebServer, stopWebServer } from '../entry-points/api';
-import { Roles, User } from '../libraries/types';
+import { startWebServer, stopWebServer } from '../../entry-points/api';
+import { Roles, User } from '../../libraries/types';
 const jwt = require('jsonwebtoken');
 
 export type TestStartOptions = {

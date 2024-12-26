@@ -11,7 +11,7 @@ module.exports = class OrderRepository {
         'shop',
         'myuser',
         'myuserpassword',
-        sequelizeConfig
+        sequelizeConfig,
       );
       orderModel = repository.define('Order', {
         id: {
@@ -30,8 +30,17 @@ module.exports = class OrderRepository {
         userId: {
           type: Sequelize.INTEGER,
         },
+        contactEmail: {
+          type: Sequelize.STRING,
+        },
         productId: {
           type: Sequelize.INTEGER,
+        },
+        totalPrice: {
+          type: Sequelize.INTEGER,
+        },
+        isPremiumUser: {
+          type: Sequelize.BOOLEAN,
         },
       });
     }
@@ -39,7 +48,6 @@ module.exports = class OrderRepository {
 
   async getOrderById(id) {
     return await orderModel.findOne({ where: { id } });
-
   }
 
   async addOrder(orderDetails) {

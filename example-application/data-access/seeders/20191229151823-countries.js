@@ -1,20 +1,32 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     // ✅ Best Practice: Seed only metadata and not test record, read "Dealing with data" section for further information
-    await queryInterface.bulkInsert('Countries', [{
-      name: 'Italy',
-      name: 'USA',
-      name: 'India'
-    }], {});
+    await queryInterface.bulkInsert(
+      'Countries',
+      [
+        {
+          name: 'Italy',
+          name: 'USA',
+          name: 'India',
+        },
+      ],
+      {},
+    );
 
     // ❌ Anti-Pattern: Seed test records, read "Dealing with data" section for further information
     const now = new Date();
-    await queryInterface.bulkInsert('Orders', [{
-      userId: 1,
-      productId: 5,
-      createdAt: now,
-      updatedAt: now,
-    }], {});
+    await queryInterface.bulkInsert(
+      'Orders',
+      [
+        {
+          userId: 1,
+          productId: 5,
+          createdAt: now,
+          updatedAt: now,
+        },
+      ],
+      {},
+    );
   },
   down: (queryInterface, Sequelize) => {
     /*

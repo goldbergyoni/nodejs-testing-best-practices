@@ -3,7 +3,7 @@ const nock = require('nock');
 const jestOpenAPI = require('jest-openapi').default;
 const {
   testSetup,
-} = require('../../../example-application/test/test-file-setup');
+} = require('../../../example-application/test/setup/test-file-setup');
 
 jestOpenAPI(path.join(__dirname, '../../../example-application/openapi.json'));
 beforeAll(async () => {

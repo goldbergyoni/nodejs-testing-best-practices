@@ -14,8 +14,8 @@ module.exports = {
   forceExit: true,
   testEnvironment: 'node',
   notify: true,
-  globalSetup: './example-application/test/global-setup.js',
-  globalTeardown: './example-application/test/global-teardown.js',
+  globalSetup: './example-application/test/setup/global-setup.js',
+  globalTeardown: './example-application/test/setup/global-teardown.js',
   notifyMode: 'change',
   transform: {
     '^.+\\.ts$': 'ts-jest',

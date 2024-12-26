@@ -1,4 +1,4 @@
-const MessageQueueClient = require('../../example-application/libraries/message-queue-client');
+const MessageQueueClient = require('../example-application/libraries/message-queue-client');
 
 beforeEach(async () => {
   const messageQueueClient = new MessageQueueClient();

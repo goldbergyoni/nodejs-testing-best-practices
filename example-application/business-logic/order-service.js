@@ -37,10 +37,15 @@ module.exports.addOrder = async function (newOrder) {
     );
   }
 
+  // A little logic to calculate the total price
+  if (newOrder.isPremiumUser) {
+    newOrder.totalPrice = Math.ceil(newOrder.totalPrice * 0.9);
+  }
+
   // save to DB (Caution: simplistic code without layers and validation)
   const DBResponse = await new OrderRepository().addOrder(newOrder);
-  console.log('DB');
 
+  console.log('DBResponse', DBResponse);
   if (process.env.SEND_MAILS === 'true') {
     await mailer.send(
       'New order was placed',

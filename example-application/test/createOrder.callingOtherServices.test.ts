@@ -1,9 +1,7 @@
-const sinon = require('sinon');
-const nock = require('nock');
-const OrderRepository = require('../../../example-application/data-access/order-repository');
-const {
-  testSetup,
-} = require('../../../example-application/test/test-file-setup');
+import nock from 'nock';
+import sinon from 'sinon';
+import OrderRepository from '../data-access/order-repository';
+import { testSetup } from './setup/test-file-setup';
 
 beforeAll(async () => {
   await testSetup.start({
@@ -27,7 +25,7 @@ afterAll(async () => {
 // ️️️✅ Best Practice: Structure tests
 describe('/api', () => {
   describe('POST /orders', () => {
-    test('When order succeed, send mail to store manager', async () => {
+    test('When order succeed, then send mail to store manager', async () => {
       //Arrange
       process.env.SEND_MAILS = 'true';
 
@@ -36,8 +34,7 @@ describe('/api', () => {
       testSetup.removeMailNock();
       let emailPayload;
       nock('http://mailer.com')
-        .post('/send', (payload) => ((emailPayload = payload), true))
-        .times(1)
+        .post('/send', (payload: undefined) => ((emailPayload = payload), true))
         .reply(202);
 
       const orderToAdd = {
@@ -50,7 +47,7 @@ describe('/api', () => {
       await testSetup.getHTTPClient().post('/order', orderToAdd);
 
       //Assert
-      // ️️️✅ Best Practice: Assert that the app called the mailer service appropriately
+      // ️️️✅ Best Practice: Assert that the app called the mailer service with the right payload
       expect(emailPayload).toMatchObject({
         subject: expect.any(String),
         body: expect.any(String),
@@ -68,9 +65,9 @@ describe('/api', () => {
         mode: 'draft',
       };
 
-      // ️️️✅ Best Practice: Simulate non-happy external services responses like 404, 422 or 500.
+      // ️️️✅ Best Practice: Simulate non-happy external services responses like 404, 422 or 500
       // ✅ Best Practice: Override the default response with a custom scenario by triggering a unique path
-      nock('http://localhost/user/').get(`/7`).reply(404, null);
+      nock('http://localhost/user/').get(`/7`).reply(404, undefined);
 
       //Act
       const orderAddResult = await testSetup
@@ -142,7 +139,7 @@ describe('/api', () => {
     nock('http://localhost/user/')
       .get('/1')
       .times(1)
-      .reply(503, undefined, { 'Retry-After': 100 });
+      .reply(503, undefined, { 'Retry-After': '100' });
     nock('http://localhost/user/').get('/1').reply(200, {
       id: 1,
       name: 'John',
