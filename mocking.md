@@ -1,178 +1,257 @@
-## **Mocking & contracts**
+## \*_Mocking_
 
 <br/>
 
-### ⚪️ 1. Identify good mocks from bad mocks
+### ⚪️ 1. Spot the Good Mocks from the Evil Ones
 
 🏷&nbsp; **Tags:** `#basic, #strategic`
 
-:white_check_mark: &nbsp; **Do:** Mocking is neccessary evil we live with, in some cases they are just evil that will... often spoken about as one piece, it's useful to identify 3 types of by their purpose:
+:white*check_mark: &nbsp; **Do:** Mocking is a necessary evil—sometimes it saves us, and sometimes it drags us straight into testing hell. While often treated as a single tool, mocks come in different flavors, and understanding them makes all the difference. Let’s break it down into \_three types* based on their purpose:
 
-isolation - prevent and check interactions with externous units like email send... This is done by stubbing a function that makes externous calls or by intercepting network requests. Isolation embodies two motivation: first avoid hitting external systems also for cost reasons - sending thousands emails a day will come with a bill. Second motivation is checking that our code is making the call in the right way. Calls to _external_ system is an effect, an outcome, of our code which should be tested for the same reason we test the code response. Inherently this mocks sit at the borders of the unit under test. This is not only legit but mandatory
+**Isolation mocks - Keeping the Outside World Outside** – Preventing access to out-of-scope units (e.g., third-party services, email providers) and ensuring proper interaction with these external units. This is done by stubbing a function that lives at our code’s boundaries and makes external calls. Alternatively, for network calls, we might intercept the request instead of stubbing the function itself.
 
-simulation - triggering some specific scenario that demands more than just an input like forcing an error or moving the time forward; Practically this means stubbing some function and triggering it to throw. While coupling the test to some internal mechanism or function is undesirable, it worth the risk if this an important scenario that can happen in production
+This style of mocking serves two main purposes:
 
-Implementation - This one is fundamentally different: It checks that that the code _internally_ worked as expected for example by checking that a in-scope function was invoked or a state is as expected. Practically this mocking style will spy-on or stub a function and assert that it was invoked as and when expected
+1.  **Prevent unwanted side effects** – Avoid hitting external systems.
+2.  **Verify external interactions** – Ensure _our_ code is making the right calls in the right way.
 
-The key difference is in both isolation and simulation what the test check is external effects, outcomes and not implemenation. Implementation mocks are the only to check HOW the unit work and not WHAT it produces. This is the one that you want to avoid at any cose, a pure evil: it will fail when refactoring work even when the code is correct (false-positive) and will not warn when it shoud (false-negative), example here
+Note: Calls to an _external_ system are an _effect_, an outcome of our code. We should test them just as we test function outputs.
 
-Note: It's not the mocking technique that tells a bad mock, both stubs and spies can be used for legit and mocking and also to assert on implemenation details
+**Simulation mocks** – Forcing a specific scenario that can't be triggered using external inputs. For example, simulating an internal error or advancing time in a test. Practically, this means stubbing an _internal_ function.
 
-Diagram unit under test borders vs internals?, 2x2, mocks differs by their purpose
+While coupling tests to internal mechanisms isn’t ideal, sometimes it’s necessary. If a scenario could realistically happen in production but is impossible to trigger naturally in a test, then a simulation mock might be justified.
 
-Grey black green,
+**Implementation mocks** – Checking that the code _internally_ worked as expected. For example, asserting that an in-scope function was invoked or verifying a component's internal state.
+
+The fundamental difference between these three is that the first two check external effects—things visible to the outside world—while implementation mocks check _how_ the unit works rather than _what_ it produces.
+
+This last type is the one you want to avoid at all costs. Why? Two reasons:
+
+1.  **False Positives** – The test fails when refactoring, even if the behavior stays correct.
+2.  **False Negatives** – The test passes when it should fail because it only checks implementation details, not the real outcome.
+
+### The Formula for a Bad Mock
+
+A mock is bad if it meets both of these conditions:
+
+- It applies to _internal_ code.
+- It appears in the test's _assert_ phase.
+- <br/>
+
+👀 &nbsp; **Alternatives:** One may minimize mocks by separating pure code from code that collaborates with externous units. This is always a welome approach, but inhertly some code must have effects
+
+<br/><br/>
+
+### ⚪️ 2. Avoid Hidden, Surprising Mocks
+
+🏷&nbsp; **Tags:** #strategic
+
+:white_check_mark: &nbsp; **Do:** Mocks obviously change both the code and test behavior, and whoever reads a failing test at midnight must be aware of these effects. "I love hidden things that mysteriously modify my code," said no one ever.
+
+Consequently, mocks should always be defined inside the test file in one of two places:
+
+If a mock directly affects the test outcome, it should be defined as part of the test itself, in the setup phase (i.e., the arrange phase).
+If a mock isn't the direct cause of the test result, it still might implicitly affect debugging, so we don't want it hidden far away from the reader—place it in the beforeEach hook instead.
+This doesn’t mean stuffing massive JSONs inside each test file. The call to the factory that generates mock data should be included in the test file, but the data itself can be kept in a dedicated file. (See the bullet about mocking factories.)
 
 <br/>
+👀 Alternatives: Some test runners, like Vitest and Jest, allow defining mocks in static files within dedicated folders. These mocks get picked up automatically, applied everywhere auto-magically, and leave the reader to figure out where these surprising effects are coming from ❌.
 
-👀 &nbsp; **Alternatives:** one might spin the backend in Docker container or just a separate Node process. This configuration better resembles the production but it will lack critical testing features as mentioned above ❌; Some teams run integration tests against production-like cloud environment (see bullet 'Reuse tests against production-like environment), this is a valid technique for extra validation but will get too slow and limiting to rely on during development ❌;
-
-<br/>
+Similarly, defining mocks in an external hook file that the test runner calls before running a suite? Also a bad idea—same reason. ❌
 
 <details><summary>✏ <b>Code Examples</b></summary>
 
 ```js
-const apiUnderTest = require('../api/start.js');
+beforeEach(() => {
+  // The email sender isn't directly related to the test's subject, so we put it in the
+  // closest test hook instead of inside each test.
+  sinon.restore();
+  sinon.stub(emailService, 'send').returns({ succeeded: true });
+});
 
-beforeAll(async () => {
-  //Start the backend in the same process
+test('When ordered by a premium user, Then 10% discount is applied', async () => {
+  // This response from an external service directly affects the test result,
+  // so we define the mock inside the test itself.
+  sinon.stub(usersService, 'getUser').returns({ id: 1, status: 'premium' });
+  //...
+});
 ```
-
-➡️ [Full code here](https://github.com/testjavascript/integration-tests-a-z/blob/4c76cb2e2202e6c1184d1659bf1a2843db3044e4/example-application/entry-points/api-under-test.js#L10-L34)
 
 </details>
 
 <br/><br/>
 
-### ⚪️ 2. Avoid hidden surprisng mocks
+### ⚪️ 3. Be Mindful About Partial Mocks
 
-🏷&nbsp; **Tags:** `#strategic`
+🏷&nbsp; **Tags:** #advanced
 
-:white_check_mark: &nbsp; **Do:** Mocks change the code and test behaviour, reader must be aware of they do. Put the mocks definition inside the test if they directly affect the test outcome, otherwise define in beforeEach
+:white_check_mark: &nbsp; **Do:** When mocking, you’re replacing functions. But if you have an object or class that needs to be mocked, should you replace all functions or just some?
 
-About big JSON, the dynamic factory
+Partial mocks are risky: They leave a zombie object—part real, part mocked. Will it always behave as expected?
+
+As a rule of thumb, when mocking objects that interact with external systems (e.g., isolation mocks like a Mailer), it’s best to mock the entire object. This ensures no hidden calls slip through. Close the borders by giving all functions a safe default—either throwing an error or returning undefined. Once that’s locked down, you can specify valid responses for the functions you actually need.
+
+Some mocking libraries, like Sinon, allow auto-mocking all functions with a single line, while others require you to define a response for every function.
+
+There is, however, one valid case for partial mocks: Simulating a specific internal failure while letting the rest of the system run as usual. For example, testing what happens if a database connection fails. In this case, we need the entire production code to run normally, except for one function that we intentionally make fail. This is the only situation where a partial mock makes sense.
 
 <br/>
 
-👀 &nbsp; **Alternatives:** Jest mocks library; vitest something
-
-<br/>
+👀 &nbsp; **Alternatives:** Replace the object with a fully fake implementation. This avoids a messy mix of real and fake but requires more effort.
 
 <details><summary>✏ <b>Code Examples</b></summary>
 
 ```js
-// dynamic factory
-```
+import sinon from 'sinon';
 
-➡️ [Full code here](https://github.com/testjavascript/integration-tests-a-z/blob/4c76cb2e2202e6c1184d1659bf1a2843db3044e4/example-application/entry-points/api-under-test.js#L10-L34)
+const myObject = {
+  methodA: () => 'some value',
+  methodB: () => 42,
+};
+
+// Stub all functions to return undefined
+const stubbedObject = sinon.stub(myObject);
+
+console.log(stubbedObject.methodA()); // undefined
+```
 
 </details>
 
 <br/><br/>
 
-### ⚪️ 3. Prefer full-mocks over partial ones
+### ⚪️ 4. Clean Up All Mocks Before Every Test
 
-🏷&nbsp; **Tags:** `#advanced`
+🏷&nbsp; **Tags:** #strategic
 
-:white_check_mark: &nbsp; **Do:** When mocking we replace functions, having an object or class, should you replace one or all? Replacing one dangerous, a partial object - some mocked, some real, surprising effects and stability at risk. Code may hit other function and trigger charges
+:white_check_mark: &nbsp; **Do:** Every test must start from a clean slate—mocks from previous tests should never affect the next ones. Always clean up all mocks in the beforeEach hook.
 
-Alertnativelly, we can truncate the mocked object, assign some safe default to all functions (like throw) and the desired behaviour to a single function
+What if you need the same common mocks across all tests? Define them inside the same beforeEach hook so they get reset and reapplied every time. This ensures that any modifications made in one test don’t leak into another.
 
-When doing isolation type of mock, full-mock is desirable. We ensure no interaction with the external.
-
-When doing simulation this rule skipped, we are forced to change implementation of internal object - changing all functions to the right behaviour is hard. We better take the risk of changing the one we need
+Also, consider adding a cleanup step in afterAll—it’s just one line—to make sure the next test file starts with no leftovers.
 
 <br/>
-
-👀 &nbsp; **Alternatives:** Mocking a specific function of a class that interacts and incur charges might miss some other calls and result with charges
-
-<br/>
+👀 &nbsp; **Alternatives:** Cleaning up in afterEach is also an option, but there’s a catch: If a test file fails to clean up properly, the first test in the next file could start in a dirty state.
 
 <details><summary>✏ <b>Code Examples</b></summary>
 
 ```js
-// Set all functions to throw, change one function only
-```
+beforeEach(() => {
+  sinon.restore();
+  // Redefine all common mocks to reset them in case a test modified them
+  sinon.stub(emailService, 'send').returns({ succeeded: true });
+});
 
-➡️ [Full code here](https://github.com/testjavascript/integration-tests-a-z/blob/4c76cb2e2202e6c1184d1659bf1a2843db3044e4/example-application/entry-points/api-under-test.js#L10-L34)
+afterAll(() => {
+  sinon.restore();
+});
+```
 
 </details>
 
 <br/><br/>
 
-### ⚪️ 4. Clean-up all mocks BEFORE every test
+### ⚪️ 5. Be Mindful About the Mocking Mechanism
 
-🏷&nbsp; **Tags:** `#advanced`
+🏷 **Tags:** `#advanced`
 
-:white_check_mark: &nbsp; **Do:**
+✅ **Do:** There are **significant differences** between the two main mocking techniques, each with its own trade-offs:
 
-<br/>
+1. **Module-based mocks** (e.g., `vitest.mock`, `jest.mock`) work by **intercepting module imports** and replacing them with mocked alternatives. These mocks hijack the module loading process and inject a test-defined version.
+2. **Cache-based mocks** rely on the fact that **`require`-d modules share the same cache**, allowing tests to modify an imported object, affecting its behavior globally. Libraries like [Sinon](https://sinonjs.org/) and `jest.spyOn`/`vitest.spyOn` use this approach.
 
-👀 &nbsp; **Alternatives:** After each...
+### **Understanding the Trade-offs**
 
-<br/>
+- **Module-based mocking** works in all scenarios, including ESM, but it comes at a cost:
+  - Mocks **must** be defined _before_ importing the module.
+  - The test runner magically **hoists** the mock above imports, which involves tweaking the module system behind the scenes.
+- **Cache-based mocking** is simpler—no magic under the hood, just regular object reference manipulation. But it has **strict limitations**:
+  - It **fails** if the module isn’t exported as a plain JS object.
+  - **ESM default exports can’t be modified** (due to [live bindings](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import)).
+  - **CJS single-function exports don’t have an object to modify**, making this technique ineffective.
 
-<details><summary>✏ <b>Code Examples</b></summary>
+### **Which One Should You Use?**
 
-```js
-
-```
-
-➡️ [Full code here](https://github.com/testjavascript/integration-tests-a-z/blob/4c76cb2e2202e6c1184d1659bf1a2843db3044e4/example-application/entry-points/api-under-test.js#L10-L34)
-
-</details>
-
-<br/><br/>
-
-### ⚪️ 5. Be mindful about the mocking mechanism
-
-🏷&nbsp; **Tags:** `#advanced`
-
-:white_check_mark: &nbsp; **Do:** There are signifcant differences between two main mocking techniques, each with its own consequences. Module based mocks like jest.mock works by changing the import/require behaviour while cache-based mocks just import an object and modify its behaviour relying on the fact that one single instance will exist
-
-Module-based mocking comes with a price, it need to intercept the import so this must happen before the code and the test import the desired code. About bundling. It's path sensitive?
-
-Cache-based mocking on the othr hand relies on another assumption - existence of object in-memory that both the test and sut act upon. What if the code under test destructures...
+- If your codebase uses **CJS (`require`)** or consistently exports **objects**, **cache-based mocking** is the simpler and preferred approach.
+- In **all other cases**, **module-based mocking** is unavoidable.
 
 <br/>
 
-👀 &nbsp; **Alternatives:** Mocking
+👀 **Alternatives:** A **dependency injection system** allows passing a mock instead of the real implementation. This sidesteps all these technical complexities but requires modifying the code structure.
 
 <br/>
 
 <details><summary>✏ <b>Code Examples</b></summary>
 
 ```js
+// service2.js
+export function service2Func() {
+  console.log('the real service2');
+}
 
+// service1.js
+import { service2Func } from './service2.js';
+
+export function service1Func() {
+  service2Func();
+}
+
+// test-with-object-caching.js
+import * as s1 from './service1.js';
+import * as s2 from './service2.js';
+
+test('Check mocking', () => {
+  sinon.stub(s2, 'service2Func').callsFake(() => {
+    console.log('Service 2 mocked');
+  });
+  s1.service1Func();
+});
+// Prints "The real service2". Mocking failed ❌
+
+// test-with-module-loading.js
+import { test, vi } from 'vitest';
+import * as s1 from './service1.js';
+import * as s2 from './service2.js';
+
+test('Check mocking', () => {
+  vi.spyOn(s2, 'service2Func').mockImplementation(() => {
+    console.log('Service 2 mocked');
+  });
+  s1.service1Func();
+});
+// Prints "Service 2 mocked". Mocking worked ✅
 ```
 
-➡️ [Full code here](https://github.com/testjavascript/integration-tests-a-z/blob/4c76cb2e2202e6c1184d1659bf1a2843db3044e4/example-application/entry-points/api-under-test.js#L10-L34)
-
 </details>
-
 <br/><br/>
 
 ### ⚪️ 6. Type your mocks
 
 🏷&nbsp; **Tags:** `#advanced`
 
-:white_check_mark: &nbsp; **Do:** There are signifcant differences between two main mocking techniques, each with its own consequences. Module based mocks like jest.mock works by changing the import/require behaviour while cache-based mocks just import an object and modify its behaviour relying on the fact that one single instance will exist
-
-Module-based mocking comes with a price, it need to intercept the import so this must happen before the code and the test import the desired code. About bundling. It's path sensitive?
-
-Cache-based mocking on the othr hand relies on another assumption - existence of object in-memory that both the test and sut act upon. What if the code under test destructures...
+:white_check_mark: &nbsp; **Do:** Type safety is always a precious asset, all the more with mocking: Once we create a 2nd instance of some code, a mock, we put ourselves at a risk of having a different signature, mostly when the code changes. When this happen, we have two versions of the truth: the reality and our false personal belief. When this happens, tests are likely to pass while production is troubled. A reputable mocking library provides type-safety support: should the defined mock isn't aligned with the code it mocks - a type error will be shown. With that, some of key mocking functions of the popular test runners are not type safe (e.g., Jest.mock, Vitest.mock) - ensure to use the ones that do support types
 
 <br/>
 
-👀 &nbsp; **Alternatives:** Mocking
+👀 &nbsp; **Alternatives:** It's possible to occassionaly turn-off mocks and run the same tests against the real collaborators - type mismatch is will be discovered only for happy paths and too late ❌; One may explictly put a type definition for the defined mocks (e.g., use the TypeScript 'satisfy' keyword) - a viable option ✅
 
 <br/>
 
 <details><summary>✏ <b>Code Examples</b></summary>
 
 ```js
+// calculate-price.ts
+export function calculatePrice(): number {
+  return 100;
+}
 
+// calculate-price.test.ts
+vi.mocked(calculatePrice).mockImplementation(() => {
+  // Vitest example. Works the same with Jest
+  return { price: 500 }; // ❌ Type '{ price: number; }' is not assignable to type 'number'
+});
 ```
 
 ➡️ [Full code here](https://github.com/testjavascript/integration-tests-a-z/blob/4c76cb2e2202e6c1184d1659bf1a2843db3044e4/example-application/entry-points/api-under-test.js#L10-L34)
 
 </details>
+````

@@ -59,7 +59,6 @@ test('When order failed, send mail to admin', async () => {
   });
 });
 
-
 // ️️️✅ Best Practice: Check external calls
 test('When adding a new valid order, Then an email should be send to admin', async () => {
   //Arrange

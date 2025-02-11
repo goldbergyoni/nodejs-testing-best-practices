@@ -16,7 +16,7 @@ export const startWebServer = (): Promise<AddressInfo> => {
     expressApp.use(
       bodyParser.urlencoded({
         extended: true,
-      })
+      }),
     );
     expressApp.use(bodyParser.json());
     expressApp.use(authenticationMiddleware);
@@ -50,18 +50,18 @@ const defineRoutes = (expressApp: express.Application) => {
     async (
       req: express.Request,
       res: express.Response,
-      next: express.NextFunction
+      next: express.NextFunction,
     ) => {
       try {
         console.log(
-          `Order API was called to add new Order ${util.inspect(req.body)}`
+          `Order API was called to add new Order ${util.inspect(req.body)}`,
         );
         const addOrderResponse = await orderService.addOrder(req.body);
         return res.json(addOrderResponse);
       } catch (error) {
         next(error);
       }
-    }
+    },
   );
 
   // get existing order by id
@@ -92,7 +92,7 @@ const defineRoutes = (expressApp: express.Application) => {
       error: unknown,
       _req: express.Request,
       res: express.Response,
-      _next: express.NextFunction
+      _next: express.NextFunction,
     ) => {
       if (!error || typeof error !== 'object') {
         await errorHandler.handleError(error);
@@ -106,7 +106,7 @@ const defineRoutes = (expressApp: express.Application) => {
       }
       await errorHandler.handleError(richError);
       res.status(status as number).end();
-    }
+    },
   );
 };
 

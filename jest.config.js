@@ -12,6 +12,7 @@ module.exports = {
   coverageReporters: ['text-summary', 'lcov'],
   collectCoverageFrom: ['**/*.js', '!**/node_modules/**', '!**/test/**'],
   forceExit: true,
+  setupFilesAfterEnv: ['jest-extended/all'],
   testEnvironment: 'node',
   notify: true,
   globalSetup: './example-application/test/setup/global-setup.js',

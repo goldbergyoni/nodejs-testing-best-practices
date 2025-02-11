@@ -1,3 +1,4 @@
+import sinon from 'sinon';
 import { buildOrder } from './order-data-factory';
 import { testSetup } from './setup/test-file-setup';
 
@@ -86,6 +87,7 @@ describe('POST /orders', () => {
     //Assert
     expect(orderAddResult.status).toBe(401);
   });
+
 
   test('When ordered by a premium user, Then 10% discount is applied', async () => {
     //Arrange

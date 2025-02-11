@@ -125,16 +125,18 @@ describe('Error Handling', () => {
     });
   });
   describe('Various Throwing Scenarios And Locations', () => {
-    test('When unhandled exception is throw, Then the logger reports correctly', async () => {
+    test('When unhandled exception is throw, Then the logger+process exit reports correctly', async () => {
       //Arrange
       const loggerDouble = sinon.stub(logger, 'error');
       const errorToThrow = new Error('An error that wont be caught 😳');
+      const processExitListener = sinon.stub(process, 'exit');
 
       //Act
       process.emit('uncaughtException', errorToThrow);
 
       // Assert
       expect(loggerDouble.lastCall.firstArg).toMatchObject(errorToThrow);
+      expect(processExitListener.called).toBe(true);
     });
 
     test.todo(
