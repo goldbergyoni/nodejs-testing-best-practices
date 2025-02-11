@@ -5,19 +5,20 @@ const axiosRetry = require('axios-retry').default;
 const OrderRepository = require('../data-access/order-repository');
 const { AppError } = require('../error-handling');
 const MessageQueueClient = require('../libraries/message-queue-client');
+const { AxiosError } = require('axios');
 
 const axiosHTTPClient = axios.create({});
-// axiosRetry(axiosHTTPClient, {
-//   retries: 3,
-//   onRetry: (count, err) => console.log('On retry', count, err),
-//   retryCondition: (request) => {
-//     console.log('Retry condition now', request.response.status);
-//     if (request.response.status >= 500) {
-//       return true;
-//     }
-//     return false;
-//   },
-// });
+axiosRetry(axiosHTTPClient, {
+  retries: 3,
+  onRetry: (count, err) => console.log('On retry', count, err),
+  retryCondition: (request) => {
+    console.log('Retry condition now', request.response.status);
+    if (request.response.status >= 500) {
+      return true;
+    }
+    return false;
+  },
+});
 
 module.exports.addOrder = async function (newOrder) {
   // validation

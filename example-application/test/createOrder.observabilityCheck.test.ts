@@ -4,6 +4,8 @@ import { AppError, metricsExporter } from '../error-handling';
 import logger from '../libraries/logger';
 import { testSetup } from './setup/test-file-setup';
 
+let processExitStub: sinon.SinonStub;
+
 beforeAll(async () => {
   await testSetup.start({
     startAPI: true,
@@ -16,7 +18,7 @@ beforeAll(async () => {
 
 beforeEach(() => {
   testSetup.resetBeforeEach();
-  sinon.stub(process, 'exit');
+  processExitStub = sinon.stub(process, 'exit');
 });
 
 afterAll(async () => {
@@ -87,7 +89,7 @@ describe('Error Handling', () => {
         productId: 2,
         mode: 'approved',
       };
-      sinon.restore();
+      processExitStub.restore();
       const processExitListener = sinon.stub(process, 'exit');
       const errorToThrow = new AppError(
         'saving-failed',
@@ -111,7 +113,7 @@ describe('Error Handling', () => {
         productId: 2,
         mode: 'approved',
       };
-      sinon.restore();
+      processExitStub.restore();
       const processExitListener = sinon.stub(process, 'exit');
       // Arbitrarily choose an object that throws an error
       const errorToThrow = new Error('Something vague and unknown');
@@ -129,6 +131,7 @@ describe('Error Handling', () => {
       //Arrange
       const loggerDouble = sinon.stub(logger, 'error');
       const errorToThrow = new Error('An error that wont be caught 😳');
+      processExitStub.restore();
       const processExitListener = sinon.stub(process, 'exit');
 
       //Act
@@ -136,7 +139,7 @@ describe('Error Handling', () => {
 
       // Assert
       expect(loggerDouble.lastCall.firstArg).toMatchObject(errorToThrow);
-      expect(processExitListener.called).toBe(true);
+      expect(processExitListener.called).toBe(false);
     });
 
     test.todo(

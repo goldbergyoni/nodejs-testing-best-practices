@@ -118,6 +118,7 @@ describe('/api', () => {
     testSetup.removeUserNock();
     nock('http://localhost')
       .get('/user/1')
+      .times(1)
       .delay(3000)
       .reply(200, { id: 1, name: 'John' });
     const orderToAdd = {
