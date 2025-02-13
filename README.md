@@ -59,11 +59,13 @@ At the end of the day, every input and output of a component must be covered wit
 
 <br/><br/>
 
-### ⚪️ 2. Run few E2E, selectively consider unit tests
+### ⚪️ 2. Run a very few E2E, selectively consider unit tests
 
 🏷&nbsp; **Tags:** ``
 
-:white_check_mark: **Do:** Always write few E2E tests on top of component tests. Based on the specific nature of the component, some unit tests might be needed as well. Though E2E means different things to different testers, in the context of a backend they represent tests that are done with live collaborators (i.e., external services) on a real infrastructure. Therefore, they cover risks that are not covered by components tests - configuration issues, misunderstanding with 3rd party services, infrastructural issues and more. When then unit tests are needed? in the presence of none-trivial logic and algorithms. When having a single module with remarkable complexity, it's easier to avoid the distraction coming from other parts by isolating the challenging unit. [This article greatly outlines when unit tests shine](https://blog.stevensanderson.com/2009/11/04/selective-unit-testing-costs-and-benefits/).
+:white\*check_mark: **Do:** Write just a tiny handful of E2E tests on top of component tests like 3-10, tests, maybe a couple more for larger components, but nothing beyond that. While "E2E" means different things to different testers, in a backend context, it refers to tests that run against live collaborators (i.e., multiple microservices) on a real infrastructure. Since component tests catch 99% of bugs, E2E tests should focus on different risks: configuration issues, misunderstandings with third-party services, infrastructure problems, and similar surprises. Catching these issues requires only a few well-placed tests
+
+When are unit tests needed? Only when dealing with non-trivial logic or algorithms. If a module has significant complexity, isolating it from distractions can make testing easier. [This article greatly outlines when unit tests shine](https://blog.stevensanderson.com/2009/11/04/selective-unit-testing-costs-and-benefits/)
 
 <br/><br/>
 
@@ -71,36 +73,35 @@ At the end of the day, every input and output of a component must be covered wit
 
 🏷&nbsp; **Tags:** ``
 
-:white*check_mark: **Do:** Intuitively and manually check that your tests cover all, or at least most, of the application \_features* (usually represented as routes). Yes, this measurement is based on human judgment and therefore is error-prone - Sadly, there is no better option yet. Many teams use code coverage to measure their test effectiveness. While this is a great measurement tool, it's by no means exhaustive and reliable enough to tell whether the tests are trustworthy enough. Having 100% coverage is expensive and does not guarantee bug-free deployment - Error might exist in the DB, MQ, or from code that is _covered_ but not _tested_ (i.e., one can reach some piece of code but not assert against it). Sometimes a component scores high coverage, say 90%, this might falsely trigger confidence, but the left 10% represent the most critical flows of the app. There are some other coverage blind spots and downsides.
-Consequently, when high reliability is imperative, it's recommended to use coverage as a complementary measurement, but not as the single truth for confidence. In the lack of reliable scientific measurement, nothing can inspire confidence more than knowing that _what the user does is covered with testing (i.e., features)_. Practically, this can be achieved in few ways: by looking at tht test reports and comparing with the requirements document, or by looking at coverage reports and verifying that the untested code is not part of key features, and by checking that the core routes/messages are approached by the tests.
+Ensure your tests cover the application's features, not just individual functions. Features are typically represented by API routes, and the only way to verify they are tested is through human judgment—comparing tests against requirements. No automated tool can fully replace this
 
-Mutation tests is also an increasing technique that can be combined in the verification suite of tools. That said, it can not serve as the primary technique since it is slow by nature and shows poor performance in tests that involve DB and IO.
+Coverage tools can help by highlighting which controller routes and services are exercised by tests, but they are not enough to guarantee that critical functionality is tested. A component might show high coverage while still missing key user flows
+
+To verify meaningful coverage, compare test reports with the requirements document, check coverage reports to ensure untested code isn’t part of essential features, and confirm that core routes and messages are hit by tests
+
+Mutation testing is another useful tool in this process, but due to its slow performance—especially in tests involving databases and IO—it should complement, not replace, this manual validation
 
 <br/><br/>
 
-### ⚪️ 4. Write the tests before **or during** the code, but not after the fact
+### ⚪️ 4. Write the tests _during_ coding, never after
 
 🏷&nbsp; **Tags:** `#strategic`
 
-:white_check_mark: **Do:** Write the tests on your most convenient time before or during coding, usually when you have enough certainty about the requirements/code. Do not write them once the features are ready because you will lose the great anti-regression perks of testing. Consider this, a developer is writing some great and fully-working code for 3 hours. Let's call this point in time - "A". Now she is coding for additional 6 hours only to discover that 5 hours ago, she presented a new bug. It might be that the last coding hours are a waste or should be fixed fundamentally. Should she have written some tests at point "A", those tests would have discovered the regression right awat and prevented this significant time loss. Like in rock climbing, tests secure our achievements and ensure we don't fall back below the latest success point. The earlier we write the tests, the less time can get lost due to a bug in code that already worked before (e.g., regression). on the other hand, the earlier we write the tests (e.g., TDD), the higher the chances of fundamental changes to the code that will mandate test refactoring - This is another form of time loss. The sweet spot then for writing tests is when the requirements and the implementation are clear enough. Not neccesserily 100% clear, but at least a solid understanding do exist. For some modules, this understanding might occur before writing the code, in other cases, one would prefer to run some experiments before filling confidence enough that she knows what the code is about. In either case, focus on the goal - Writing the tests early enough to get a safety net. Whether it is before the tests or 45 min after - This level of discussion is not strategic enough and should be left for the developers` personal style.
+:white_check_mark: **Do:** Write tests when it's most convenient—before or during coding—but never after everything is built. Waiting too long means losing the anti-regression safety net that tests provide
+
+Imagine a developer spends three hours writing great, fully working code (let’s call this point "A"). Then, she codes for six more hours, only to realize that a bug was introduced five hours ago. If she had written tests at point A, they would have caught the issue immediately, preventing wasted effort. Like in rock climbing, tests secure progress—the earlier they are written, the less risk of falling back due to regressions
+
+Tests should also be designed for frequent execution, running every few minutes like a robot assistant watching our back. They should constantly validate that recent changes haven’t broken anything, giving instant feedback and keeping development smooth
+
+That said, writing tests too early (e.g., strict TDD) can lead to unnecessary refactoring as the design evolves. The sweet spot is when both requirements and implementation are clear enough—not necessarily perfect, but solid. For some modules, that clarity comes before writing code; for others, it follows some experimentation. Either way, the goal is simple: write tests early enough to provide a safety net without slowing development. Whether that's before coding or 45 minutes into it is a matter of personal style, not strategy
 
 <br/><br/>
 
-### ⚪️ 5. Run the tests frequenly, if possible run continously in watch mode
-
-🏷&nbsp; **Tags:** ``
-
-:white_check_mark: **Do:** Run the tests very frequently, not longer than every few minutes during coding. If possible let it happen automatically, even continuously, while a developer is coding. The more frequent the tests run, the sooner they will discover issues. When they run automatically, the developer won't even need to remember to do anything - The tests are just there, watching her back like a robot assistant. When a component's size is relatively small, the tests can get executed in watch mode, so every code change will trigger a new run. Try this with our example app (includes live DB) - The test will show feedback in 3 seconds. Concerned with noise coming from the testing terminal? Put it in the background: Some test runner will show pop-up when the tests suddenly fail (e.g., [Jest notify](https://jestjs.io/docs/configuration#notify-boolean)). There are also silent test runners like [mocha-silent](https://www.npmjs.com/package/mocha-silent-reporter) and [jest-silent](https://github.com/rickhanlonii/jest-silent-reporter). You may also try our experimental watch mode extension that will run the tests every 30 seconds automatically in the background. Interested? Just open an issue
-
-<br/><br/>
-
-### ⚪️ 6. Testing the 5 known outcomes
+### ⚪️ 6. Test the 5 known backend outcomes
 
 🏷&nbsp; **Tags:** `#strategic`
 
-_(This section also appear at the begining and is repeated here as it also integral part of the testing workflow)_
-
-:white_check_mark: &nbsp; **Do:** When planning your tests, consider covering the five typical flow's outputs. When your test is triggering some action (e.g., API call), a reaction is happening, something meaningful occurs and calls for testing. Note that we don't care about how things work. Our focus is on outcomes, things that are noticeable from the outside and might affect the user. These outcomes/reactions can be put in 5 categories:
+:white_check_mark: &nbsp; **Do:** When planning your tests, consider covering the five typical backend flow's outputs. When your test is triggering some action (e.g., API call), a reaction is happening, something meaningful occurs and calls for testing. Note that we don't care about how things work. Our focus is on outcomes, things that are noticeable from the outside and might affect the user. These outcomes/reactions can be put in 5 categories:
 
 **• Response -** The test invokes an action (e.g., via API) and gets a response. It's now concerned with checking the response data correctness, schema, and HTTP status
 
@@ -110,7 +111,7 @@ _(This section also appear at the begining and is repeated here as it also integ
 
 **• Message queues -** The outcome of a flow might be a message in a queue. In our example application, once a new order was saved the app puts a message in some MQ product. Now other components can consume this message and continue the flow. This is very similar to testing integrations only working with message queues is different technically and tricky. The 📗 section 'Message Queues' below delve into this topic
 
-**• Observability -** Some things must be monitored, like errors or remarkable business events. When a transaction fails, not only we expect the right response but also correct error handling and proper logging/metrics. This information goes directly to a very important user - The ops user (i.e., production SRE/admin). Testing error handler is not very straighforward - Many types of errors might get thrown, some errors should lead to process crash, and there are many other corners to cover. We plan to write the 📗 section on 'Observability and errors' soon
+**• Observability -** Some things must be monitored, like errors or remarkable business events. When a transaction fails, not only we expect the right response but also correct error handling and proper logging/metrics. This information goes directly to a very important user - The ops user (i.e., production SRE/admin). Testing error handler is not very straighforward - Many types of errors might get thrown, some errors should lead to process crash, and there are many other corners to cover. We plan to write the 📗 section on 'Observability and errors' soon, but the exampe application already contains examples in the file "createOrder.observabilityCheck.test.ts"
 
 <br/><br/>
 
