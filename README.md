@@ -4,10 +4,6 @@
 
 ## A detailed guide to modern testing with Node.js
 
-<br/><br/>
-
-This repository contains:
-
 **1. ✅ 50+ Best Practices List -** Detailed instructions on how to modern tests in the RIGHT way
 
 **2. 📊 Example application -** A Complete showcase of a typical Node.js backend with performant tests setup (40 tests in 5 seconds! including database!)
@@ -18,7 +14,7 @@ This repository contains:
 
 # `Table of contents`
 
-### Best Practices Sections
+## Best Practices Sections
 
 - [`Database And Infrastructure Setup`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#section-1-infrastructure-and-database-setup) - Optimizing your DB, MQ and other infra for testing (6 best practices)
 - [`Web Server Setup`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#section-2-web-server-setup) - Good practices for starting and stopping the backend API (3 best practices)
