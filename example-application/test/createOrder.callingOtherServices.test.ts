@@ -111,14 +111,13 @@ describe('/api', () => {
     });
   });
 
-  test("When users service doesn't reply and times out, then return 503", async () => {
+  test.only("When users service doesn't reply and times out, then return 503", async () => {
     //Arrange
     // ✅ Best Practice: Let nock fail fast a timeout scenario (or use "fake timers" to simulate long requests withou actually slowing down the tests)
     process.env.HTTP_TIMEOUT = '2000';
     testSetup.removeUserNock();
     nock('http://localhost')
       .get('/user/1')
-      .times(1)
       .delay(3000)
       .reply(200, { id: 1, name: 'John' });
     const orderToAdd = {

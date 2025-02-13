@@ -1,30 +1,18 @@
-![Header](./graphics/main-header.png 'Component Tests')
+![Header](./graphics/testing-best-practices-banner.png 'Node.js Testing Best Practices')
 
 <br/>
 
-## Master the art of the most powerful testing technique for backend
+## A detailed guide to modern testing with Node.js
 
 <br/><br/>
-
-# 3 things to your benefit
-
-Component/integration test is an hybrid between E2E and unit tests. It's gaining a lot of popularity and going by the testing diamond model it is considered as the default technique for modern backend. Its main idea is testing an entire component (e.g., Microservice) as-is, through the API, with all the layers including database but fake anything extraneous. This brings **both** high confidence **and** great developer experience. However, doing it right, fast, exhaustive and maximizing the value demand some learning and skills. This is the mission statement of this repo. Warning: You might fall in love with testing 💚
 
 This repository contains:
 
-**1. ✅ 40+ Best Practices List -** Detailed instructions on how to write component tests in the RIGHT way including code example and reference to the example application
+**1. ✅ 50+ Best Practices List -** Detailed instructions on how to modern tests in the RIGHT way
 
-**2. 📊 Example application -** A Complete showcase of a typical Node.js backend with performant tests setup (50 tests in 4 seconds! including database!)
+**2. 📊 Example application -** A Complete showcase of a typical Node.js backend with performant tests setup (40 tests in 5 seconds! including database!)
 
-**3. 🚀 Recipes folders -** Even more examples, each in its own folder, to cover more platform and use cases like Nest.js, Mocha, Jest, Express, Fastify (soon), message queues, authentication in tests, OpenAPI testing and more
-
-<br/><br/>
-
-![Header](/graphics/component-diagram.jpg 'Component Tests')
-
-<br/><br/>
-
-### 👨‍🏫 Exciting news: I've just released my super-comprehensive testing course after two years of recording and editing. [It's now on a 🎁 limited-time sale during July](https://testjavascript.com/)
+**3. 🚀 Advanced topics -** Go well beyond the basics. This guide covers hot topics like testing with data(base), testing interactions with external services including contracts, testing with message queues and more
 
 <br/><br/>
 
