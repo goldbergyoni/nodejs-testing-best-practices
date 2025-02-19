@@ -16,7 +16,7 @@
 
 Yoni Goldberg, Michael Solomon, and Daniel Gluskin
 
-Lessons learned while working with 50 companies
+Lessons learned while working with 50 companies 
 
 <br/><br/>
 

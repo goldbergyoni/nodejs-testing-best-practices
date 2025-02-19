@@ -111,7 +111,7 @@ describe('/api', () => {
     });
   });
 
-  test.only("When users service doesn't reply and times out, then return 503", async () => {
+  test("When users service doesn't reply and times out, then return 503", async () => {
     //Arrange
     // ✅ Best Practice: Let nock fail fast a timeout scenario (or use "fake timers" to simulate long requests withou actually slowing down the tests)
     process.env.HTTP_TIMEOUT = '2000';
@@ -133,6 +133,7 @@ describe('/api', () => {
     expect(response.status).toBe(503);
   });
 
+  //TODO: Fix a bug here
   test.skip('When users service replies with 503 once and retry mechanism is applied, then an order is added successfully', async () => {
     //Arrange
     testSetup.removeUserNock();

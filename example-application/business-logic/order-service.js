@@ -8,17 +8,6 @@ const MessageQueueClient = require('../libraries/message-queue-client');
 const { AxiosError } = require('axios');
 
 const axiosHTTPClient = axios.create({});
-axiosRetry(axiosHTTPClient, {
-  retries: 3,
-  onRetry: (count, err) => console.log('On retry', count, err),
-  retryCondition: (request) => {
-    console.log('Retry condition now', request.response.status);
-    if (request.response.status >= 500) {
-      return true;
-    }
-    return false;
-  },
-});
 
 module.exports.addOrder = async function (newOrder) {
   // validation
@@ -75,7 +64,6 @@ module.exports.getOrder = async function (id) {
 
 async function getUserFromUsersService(userId) {
   try {
-    console.log('calling user service1');
     const getUserResponse = await axiosHTTPClient.get(
       `http://localhost/user/${userId}`,
       {
@@ -83,16 +71,12 @@ async function getUserFromUsersService(userId) {
           ? parseInt(process.env.HTTP_TIMEOUT)
           : 2000,
         validateStatus: (status) => {
-          console.log('calling user service2');
           return status < 500;
         },
       },
     );
-    console.log('calling user service3');
     return getUserResponse.data;
   } catch (error) {
-    console.log('calling user service4');
-    console.log('error', error.code);
     if (error?.code === 'ECONNABORTED') {
       throw new AppError(
         'user-verification-failed',
