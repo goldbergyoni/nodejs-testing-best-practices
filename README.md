@@ -16,7 +16,7 @@
 
 Yoni Goldberg, Michael Solomon, and Daniel Gluskin
 
-Lessons learned while working with 50 companies 
+Lessons learned while working with 50 companies
 
 <br/><br/>
 
@@ -24,7 +24,7 @@ Lessons learned while working with 50 companies
 
 ## Best Practices Sections
 
-- [`Strategy & Workflow`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#section-1-development-workflow) - Which tests should you write in 2025? (5 best practices)
+- [`Strategy & Workflow`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#section-1-strategy-workflow) - Which tests should you write in 2025? (5 best practices)
 - [`Database And Infrastructure Setup`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#section-2-infrastructure-and-database-setup) - Optimizing your DB, MQ and other infra for testing (6 best practices)
 - [`Web Server Setup`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#section-3-web-server-setup) - Good practices for starting and stopping the backend API (3 best practices)
 - [`The Test Anatomy`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#section-4-test-test-anatomy-basics) - The bread and butter of a component test (6 best practices)
