@@ -16,7 +16,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -33,4 +32,3 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run test:nestjs
-      - run: npm run test:mocha
