@@ -12,6 +12,14 @@
 
 <br/><br/>
 
+## Authors
+
+Yoni Goldberg, Michael Solomon, and Daniel Gluskin
+
+Lessons learned while working with 50 companies
+
+<br/><br/>
+
 # `Table of contents`
 
 ## Best Practices Sections
@@ -96,6 +104,8 @@ Tests should also be designed for frequent execution, running every few minutes 
 That said, writing tests too early (e.g., strict TDD) can lead to unnecessary refactoring as the design evolves. The sweet spot is when both requirements and implementation are clear enough—not necessarily perfect, but solid. For some modules, that clarity comes before writing code; for others, it follows some experimentation. Either way, the goal is simple: write tests early enough to provide a safety net without slowing development. Whether that's before coding or 45 minutes into it is a matter of personal style, not strategy
 
 <br/><br/>
+
+---
 
 ### ⚪️ 6. Test the 5 known backend outcomes
 
