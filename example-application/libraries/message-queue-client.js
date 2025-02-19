@@ -40,9 +40,8 @@ class MessageQueueClient extends EventEmitter {
       heartbeat: 0,
       vhost: '/',
     };
-    this.connection = await this.messageQueueProvider.connect(
-      connectionProperties
-    );
+    this.connection =
+      await this.messageQueueProvider.connect(connectionProperties);
     this.channel = await this.connection.createChannel();
   }
 
@@ -61,7 +60,7 @@ class MessageQueueClient extends EventEmitter {
       exchangeName,
       routingKey,
       Buffer.from(JSON.stringify(message)),
-      { messageId }
+      { messageId },
     );
     this.emit('publish', { exchangeName, routingKey, message });
 

@@ -14,7 +14,7 @@ const errorHandler = {
       await mailer.send(
         'Error occured',
         `Error is ${errorToHandle}`,
-        'admin@our-domain.io'
+        'admin@our-domain.io',
       );
 
       // A common best practice is to crash when an unknown error (non-trusted) is being thrown
@@ -36,7 +36,7 @@ class AppError extends Error {
   constructor(name, message, HTTPStatus, isTrusted) {
     super(message);
     this.name = name;
-    this.status = HTTPStatus;
+    this.status = HTTPStatus || 500;
     this.isTrusted = isTrusted === undefined ? true : false;
   }
 }

@@ -15,11 +15,20 @@ module.exports = {
       mode: {
         type: Sequelize.STRING,
       },
+      contactEmail: {
+        type: Sequelize.STRING,
+      },
       userId: {
         type: Sequelize.INTEGER,
       },
       productId: {
         type: Sequelize.INTEGER,
+      },
+      totalPrice: {
+        type: Sequelize.INTEGER,
+      },
+      isPremiumUser: {
+        type: Sequelize.BOOLEAN,
       },
       createdAt: {
         allowNull: false,
@@ -40,9 +49,9 @@ module.exports = {
       },
       name: {
         type: Sequelize.STRING,
-      }
+      },
     });
   },
 
-  down: (queryInterface, Sequelize) => queryInterface.dropTable("Orders"),
+  down: (queryInterface, Sequelize) => queryInterface.dropTable('Orders'),
 };

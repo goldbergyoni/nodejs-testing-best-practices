@@ -1,8 +1,7 @@
 module.exports = {
   verbose: false,
   testMatch: [
-    '**/test/**/*test*.js',
-    '**/*test*.js',
+    '**/*test.{ts,js}',
     '!**/mocha/**',
     '!**/playground/**',
     '!**/*test-helper*',
@@ -13,11 +12,15 @@ module.exports = {
   coverageReporters: ['text-summary', 'lcov'],
   collectCoverageFrom: ['**/*.js', '!**/node_modules/**', '!**/test/**'],
   forceExit: true,
+  setupFilesAfterEnv: ['jest-extended/all'],
   testEnvironment: 'node',
   notify: true,
-  globalSetup: './example-application/test/global-setup.js',
-  globalTeardown: './example-application/test/global-teardown.js',
+  globalSetup: './example-application/test/setup/global-setup.js',
+  globalTeardown: './example-application/test/setup/global-teardown.js',
   notifyMode: 'change',
+  transform: {
+    '^.+\\.ts$': 'ts-jest',
+  },
   watchPlugins: [
     'jest-watch-typeahead/filename',
     'jest-watch-typeahead/testname',

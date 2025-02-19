@@ -1,6 +1,6 @@
+import axios, { AxiosInstance } from 'axios';
+import * as nock from 'nock';
 import { initializeWebServer, stopWebServer } from '../main';
-import axios, { AxiosInstance } from "axios";
-import * as nock from 'nock'
 
 // Configuring file-level HTTP client with base URL will allow
 // all the tests to approach with a shortened syntax
@@ -42,7 +42,7 @@ describe('/api', () => {
       expect(getResponse).toMatchObject({
         status: 200,
         data: {
-          greeting: 'Testing is fun!'
+          greeting: 'Testing is fun!',
         },
       });
     });
