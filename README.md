@@ -27,7 +27,7 @@ Lessons learned while working with 50 companies
 - [`Strategy & Workflow`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#section-1-strategy-and-workflow) - Which tests should you write in 2025? (5 best practices)
 - [`Database And Infrastructure Setup`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#section-2-infrastructure-and-database-setup) - Optimizing your DB, MQ and other infra for testing (6 best practices)
 - [`Web Server Setup`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#section-3-web-server-setup) - Good practices for starting and stopping the backend API (3 best practices)
-- [`The Test Anatomy`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#section-4-test-test-anatomy-basics) - The bread and butter of a component test (6 best practices)
+- [`The Test Anatomy`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#section-4-the-test-anatomy) - The bread and butter of a component test (6 best practices)
 - [`Integration`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#Section-5-integrations) - Techniques for testing collaborations with 3rd party components (8 best practices)
 - [`Dealing With Data`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#section-6-dealing-with-data) - Patterns and practices for testing the application data and database (8 best practices)
 - [`Message Queue`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#section-7-message-queues) - Correctly testing flows that start or end at a queue (8 best practices)
@@ -459,7 +459,7 @@ beforeAll(async () => {
 
 <br/><br/>
 
-## **Section 4: The test anatomy (basics)**
+## **Section 4: The test anatomy**
 
 <br/>
 
@@ -684,7 +684,7 @@ Find here the [same content as a course](https://testjavascript.com/), online [w
 
 <br/><br/>
 
-## **Section 5: Integrations**
+## **Section 5: Integrations With Other Services and APIs**
 
 <br/>
 
@@ -933,9 +933,45 @@ test('When order failed, send mail to admin', async () => {
 
 <br/><br/>
 
-### ⚪️ 8. Fake the time to minimize network call duration
+### ⚪️ 8. Code against a strict API provider contract
 
-🏷&nbsp; **Tags:** `#basic, #draft`
+🏷&nbsp; **Tags:** `#advanced`
+
+:white_check_mark: **Do:** Make the API provider produce artifacts like an OpenAPI document, which, with additional tooling, can make consumer tests fail early if their understanding deviates from the real API supported schemas
+
+A common trap in API integrations is assuming requests and responses follow a certain structure, only to discover in production that something doesn’t match. Without a contract, consumers might send an unexpected query parameter, miss a required field, or misinterpret a response. When relying on mocking-only - these issues pass unnoticed in testing and might fail in production once they meet the real API. The risk grows when providers update their API, breaking assumptions silently
+
+One simple solution is to share types or schemas between the provider and consumer, such as a TypeScript type definition or JSON Schema in a shared package. This ensures tests fail when a type-related breaking change occurs. But this only catches structural issues—it won’t help with incorrect query parameters, outdated routes, or missing headers
+
+A stronger approach is generating an API client from an OpenAPI document using tools like [openapi-fetch](https://www.npmjs.com/package/openapi-fetch). This enforces API correctness at compile time and instantly fails when something is off—like an outdated endpoint or missing a required field. Various vendors offer a mock server that among other features can validate a request against a pre-configured OpenAPI
+
+For even greater confidence with additional cost, a test-kit approach should be considered. Here, the provider supplies a lightweight mock of their API that consumers integrate into their tests. This catches not only request mismatches but also state-related issues, such as expecting an item to persist when the real API behaves differently. For the usual integration, an OpenAPI-based solution is the way to go
+
+This guide wouldn’t be complete without mentioning [PACT Consumer-Driven Contracts](https://docs.pact.io/) — an innovative but opinionated framework for syncing providers and consumers. While feature-rich, its proprietary workflow raises doubts about broad developer adoption. The same vendor now offers a new, OpenAPI-based model that aligns better with industry standards
+
+![Contract options](/graphics/contract-options.png)
+
+<br/>
+
+👀 &nbsp; **Alternatives:** E2E; Mocks; PACT;
+
+<br/>
+
+<details><summary>✏ <b>Code Examples</b></summary>
+
+```javascript
+// TODO
+```
+
+➡️ [Full code here]()
+
+</details>
+
+<br/><br/>
+
+### ⚪️ 9. Fake the time to minimize network call duration
+
+🏷&nbsp; **Tags:** `#basic`
 
 :white_check_mark: **Do:** Interception tools include record mode which ...; use this to become aware of the integration it self, but also to its various patterns. Ensure all variations are covered with testing. You may use the recorded file as default; Do this in staging environment; Valuable when there are many integrations.
 
