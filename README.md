@@ -67,13 +67,13 @@ _Lessons Written in Blood: Hard-Won Insights from Consulting with 50 Companies_
 
 🏷&nbsp; **Tags:** `#strategic`
 
-:white_check_mark: **Do:** No matter when testing starts, the first tests to write should be component tests. But what exactly are component/integration tests? They focus on testing an entire component (e.g., a microservice) as-is, through its API, with all layers included—database and all—while faking anything extraneous. This approach delivers both high confidence and a great developer experience.
+:white_check_mark: **Do:** No matter when testing starts, the first tests to write should be component tests. But what exactly are component/integration tests? They focus on testing an entire component (e.g., a microservice) as-is, through its API, with all layers included—database and all—while faking anything extraneous. This approach delivers both high confidence (it's like the production environment!) and a great developer experience.
 
 Why start here? When a new sprint or feature begins, the first known details are about the component's expected behavior. Developers can immediately outline what the API/MQ will receive and what kind of response it should return. Naturally, testing this public interface first makes the most sense. This powerful testing approach brings immense value: it is realistic, demands less effort than covering every function with tests, requires close to zero mocking, triggers high coverage, and keeps the tester focused on what truly matters
 
 On the other hand, writing unit tests for inner functions before the overall outcome is clear is a wasted effort. Even classic TDD books emphasize this approach—check out the [the double verification loop model](https://miro.medium.com/max/700/0*c5ahAZusp87Bo6Io.jpg).
 
-At the end of the day, every input and output of a component must be covered with component tests. This is the bread and butter of your testing strategy—the Swiss Army knife that catches 99% of the bugs
+At the end of the day, every input and output of a component must be covered with component tests. This is the bread and butter of your testing strategy—the Swiss Army knife that catches 99% of the bugs. This strategy is known as the 'Testing Diamond'
 
 ![Component tests](/graphics/component-diagram.jpg 'Component Tests')
 
