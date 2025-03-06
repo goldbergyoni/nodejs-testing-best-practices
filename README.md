@@ -14,15 +14,27 @@
 
 ## Authors
 
-Yoni Goldberg, Michael Solomon, and Daniel Gluskin
+<img width="100" height="100" src="graphics/team/yoni.jpg"/>
 
-Lessons learned while working with 50 companies
+**Yoni Goldberg**
+  
+
+<img width="100" height="100" src="graphics/team/michael.jpg"/>
+
+**Michael Salomon**
+            
+      
+<img width="100" height="100" src="graphics/team/daniel.jpg"/>
+
+**Daniel Gluskin**
+
+<br/>
+
+_Lessons Written in Blood: Hard-Won Insights from Consulting with 50 Companies_
 
 <br/><br/>
 
 # `Table of contents`
-
-## Best Practices Sections
 
 - [`Strategy & Workflow`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#section-1-strategy-and-workflow) - Which tests should you write in 2025? (5 best practices)
 - [`Database And Infrastructure Setup`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#section-2-infrastructure-and-database-setup) - Optimizing your DB, MQ and other infra for testing (6 best practices)
