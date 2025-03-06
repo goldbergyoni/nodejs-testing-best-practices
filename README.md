@@ -93,14 +93,9 @@ When are unit tests needed? Only when dealing with non-trivial logic or algorith
 
 🏷&nbsp; **Tags:** ``
 
-Ensure your tests cover the application's features, not just individual functions. Features are typically represented by API routes, and the only way to verify they are tested is through human judgment—comparing tests against requirements. No automated tool can fully replace this
+Focus your tests on features, not just functions. Features represent the core behavior of your application—often reflected in API routes—and testing them ensures an automated focus on what truly matters. This approach also helps set the right priorities and often requires fewer tests than function-level testing.
 
-Coverage tools can help by highlighting which controller routes and services are exercised by tests, but they are not enough to guarantee that critical functionality is tested. A component might show high coverage while still missing key user flows
-
-To verify meaningful coverage, compare test reports with the requirements document, check coverage reports to ensure untested code isn’t part of essential features, and confirm that core routes and messages are hit by tests
-
-Mutation testing is another useful tool in this process, but due to its slow performance—especially in tests involving databases and IO—it should complement, not replace, this manual validation
-
+Coverage reports are a great way to see which controllers, modules, and folders are exercised by tests. They help identify which critical features have been tested and, just as importantly, highlight gaps where essential functionality might still be missing. To verify meaningful coverage, compare test reports with requirements, check coverage reports to confirm key features are included, and ensure core routes and messages are covered by tests
 <br/><br/>
 
 ### ⚪️ 4. Write the tests _during_ coding, never after
@@ -119,17 +114,17 @@ That said, writing tests too early (e.g., strict TDD) can lead to unnecessary re
 
 ---
 
-### ⚪️ 6. Test the 5 known backend outcomes
+### ⚪️ 5. Test the five known backend exit doors (outcomes)
 
 🏷&nbsp; **Tags:** `#strategic`
 
-:white_check_mark: &nbsp; **Do:** When planning your tests, consider covering the five typical backend flow's outputs. When your test is triggering some action (e.g., API call), a reaction is happening, something meaningful occurs and calls for testing. Note that we don't care about how things work. Our focus is on outcomes, things that are noticeable from the outside and might affect the user. These outcomes/reactions can be put in 5 categories:
+:white_check_mark: &nbsp; **Do:** When planning your tests, consider covering the five typical backend flow's outputs. That is, when your test is triggering some action (e.g., API call), a reaction is happening, something meaningful occurs and calls for testing. Note that we don't care about how things work. Our focus is on outcomes, things that are noticeable from the outside and might affect the user. These outcomes/reactions can be put in 5 categories:
 
 **• Response -** The test invokes an action (e.g., via API) and gets a response. It's now concerned with checking the response data correctness, schema, and HTTP status
 
 **• A new state -** After invoking an action, some data is probably modified. For example, when updating a user - It might be that the new data was not saved. Commonly and mistakenly, testers check only the response and not whether the data is updated correctly. Testing data and databases raises multiple interesting challenges that are greatly covered below in the 📗 section 'Dealing with data'
 
-**• External calls -** After invoking an action, the app might call an external component via HTTP or any other transport. For example, a call to send SMS, email or charge a credit card. Anything that goes outside and might affect the user - Should be tested. Testing integrations is a broad topic which is discussed in the 📗 section 'Testing integrations' below
+**• Calls to external services -** After invoking an action, the app might call an external component via HTTP or any other transport. For example, a call to send SMS, email or charge a credit card. Anything that goes outside and might affect the user - Should be tested. Testing integrations is a broad topic which is discussed in the 📗 section 'Testing integrations' below
 
 **• Message queues -** The outcome of a flow might be a message in a queue. In our example application, once a new order was saved the app puts a message in some MQ product. Now other components can consume this message and continue the flow. This is very similar to testing integrations only working with message queues is different technically and tricky. The 📗 section 'Message Queues' below delve into this topic
 
