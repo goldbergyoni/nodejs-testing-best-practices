@@ -4,7 +4,7 @@ You might get addiced and dramatically push your testing skills, you've been war
 <a name="pull-requests"></a>
 ## Pull requests
 
-**Please ask first** before embarking on any significant pull request (e.g.
+**Kindly ask first** before embarking on any significant pull request (e.g.
 implementing features, refactoring code, porting to a different language),
 otherwise you risk spending a lot of time working on something that the
 project's developers might not want to merge into the project.
