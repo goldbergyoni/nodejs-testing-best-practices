@@ -14,17 +14,18 @@
 
 ## Authors
 
-<img width="100" height="100" src="graphics/team/yoni.jpg"/>
+<img width="50" height="50" src="graphics/team/yoni.jpg"/>
 
 **Yoni Goldberg**
-  
 
-<img width="100" height="100" src="graphics/team/michael.jpg"/>
+Speaking about this soon at the following conferences: City.js Athens 🇬🇷, React.Next Tel-Aviv 🇮🇱, Render Atlanta 🇺🇸
+
+<img width="50" height="50" src="graphics/team/michael.jpg"/>
 
 **Michael Salomon**
             
       
-<img width="100" height="100" src="graphics/team/daniel.jpg"/>
+<img width="50" height="50" src="graphics/team/daniel.jpg"/>
 
 **Daniel Gluskin**
 
@@ -44,6 +45,16 @@ _Lessons Written in Blood: Hard-Won Insights from Consulting with 50 Companies_
 - [`Dealing With Data`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#section-6-dealing-with-data) - Patterns and practices for testing the application data and database (8 best practices)
 - [`Message Queue`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#section-7-message-queues) - Correctly testing flows that start or end at a queue (8 best practices)
 - [`Mocking`](https://github.com/testjavascript/nodejs-integration-tests-best-practices#section-8-mocking)(6 best practices)
+
+<br/><br/>
+
+### Athens workshop + Online course
+
+**- 🧑‍🏫 Online course:** Learn all of these patterns & practices in a [comprehensive online course - On special sale until April 30th](https://testjavascript.com/)
+
+**- 🇬🇷 Athens workshop:** [Attend my workshop in City.js Athens](https://greece.cityjsconf.org/) + Bonus: Get royal access to my online course
+
+<br/><br/>
 
 ### Example Application
 
