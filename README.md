@@ -94,7 +94,7 @@ At the end of the day, every input and output of a component must be covered wit
 
 🏷&nbsp; **Tags:** ``
 
-:white\*check_mark: **Do:** Write just a tiny handful of E2E tests on top of component tests like 3-10, tests, maybe a couple more for larger components, but nothing beyond that. While "E2E" means different things to different testers, in a backend context, it refers to tests that run against live collaborators (i.e., multiple microservices) on a real infrastructure. Since component tests catch 99% of bugs, E2E tests should focus on different risks: configuration issues, misunderstandings with third-party services, infrastructure problems, and similar surprises. Catching these issues requires only a few well-placed tests
+:white_check_mark: **Do:** Write just a tiny handful of E2E tests on top of component tests like 3-10, tests, maybe a couple more for larger components, but nothing beyond that. While "E2E" means different things to different testers, in a backend context, it refers to tests that run against live collaborators (i.e., multiple microservices) on a real infrastructure. Since component tests catch 99% of bugs, E2E tests should focus on different risks: configuration issues, misunderstandings with third-party services, infrastructure problems, and similar surprises. Catching these issues requires only a few well-placed tests
 
 When are unit tests needed? Only when dealing with non-trivial logic or algorithms. If a module has significant complexity, isolating it from distractions can make testing easier. [This article greatly outlines when unit tests shine](https://blog.stevensanderson.com/2009/11/04/selective-unit-testing-costs-and-benefits/)
 
